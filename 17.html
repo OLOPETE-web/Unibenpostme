@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CBT Random Questions</title>
+<meta charset="UTF-8">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #f0f2f5; 
+    padding: 20px; 
+    max-width: 900px; 
+    margin: auto; 
+    color: #333;
+  }
+
+  h2, h3, h4 { color: #007bff; margin-bottom: 10px; }
+
+  #setup { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    text-align: center;
+  }
+
+ .q { 
+    margin-bottom: 20px; 
+    padding: 20px; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 10px; 
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: 0.2s;
+  }
+ .q:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+ .q p { margin: 0 0 15px 0; font-size: 17px; font-weight: 600; line-height: 1.5; }
+
+  label { 
+    display: block; 
+    margin: 10px 0; 
+    cursor: pointer; 
+    padding: 12px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    transition: 0.2s;
+  }
+  label:hover { background: #e7f3ff; border-color: #00bcff; }
+  input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+  button { 
+    padding: 14px 28px; 
+    margin: 10px 8px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 16px; 
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  button:hover { transform: translateY(-2px); }
+
+.btn-primary { background: #00bcff; color: white; }
+.btn-primary:hover { background: #0099cc; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #b02a37; }
+
+.btn-time { background: #e9ecef; color: #333; border: 2px solid transparent; }
+.btn-time.active { background: #007bff; color: white; border-color: #007bff; }
+
+.timer { 
+    position: sticky; 
+    top: 10px; 
+    background: linear-gradient(90deg, #ff9800, #ff5722); 
+    color: white; 
+    padding: 15px; 
+    text-align: center; 
+    font-size: 20px; 
+    font-weight: bold; 
+    border-radius: 10px; 
+    margin-bottom: 20px; 
+    display: none; 
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(255,152,0,0.3);
+  }
+
+.stats-box { 
+    background:white; 
+    padding:25px; 
+    border-radius:12px; 
+    margin-bottom:20px; 
+    border:1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+.stats-box h3 { font-size: 28px; color: #00bcff; }
+
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .q { padding: 15px; }
+    button { width: 100%; margin: 8px 0; }
+    .timer { font-size: 18px; padding: 12px; }
+    
+}
+</style>
+</head>
+<body>
+
+<div id="setup">
+<h2>Select Test Type</h2>
+<h4>1. Choose number of questions:</h4>
+<button class="btn-primary" onclick="selectQuestions(20)">20 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(30)">30 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(40)">40 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(50)">50 Questions</button>
+<h4>2. Choose time:</h4>
+<div id="timeOptions">
+<button class="btn-time" onclick="selectTime(15, event)">15 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">30 mins</button>
+<button class="btn-time" onclick="selectTime(45, event)">45 mins</button>
+<button class="btn-time" onclick="selectTime(60, event)">1 hr</button>
+</div>
+
+<br>
+<button class="btn-primary" onclick="startTest()" id="startBtn" disabled>Start Test</button>
+<button class="btn-danger" onclick="resetSeenQuestions()">Reset Questions</button>
+</div>
+
+<div class="timer" id="timer"></div>
+<div id="quiz"></div>
+
+<script>
+// questions
+
+const questionBank = [
+{id: 1, q: "Which of the following is not true about semiconductor?", options: ["Moving holes are equivalent to moving positive charges","There are two kinds of charge carriers: free electron and a hole","The escape of a valence electron from an atom produces electron-hole pair charge carriers","Increase in temperature increases its electrical resistance"], correct: 3},
+  {id: 2, q: "The minimum energy necessary to remove an electron from a given atom to infinity is called", options: ["Excitation energy","Ground state energy","Ionization energy","Binding energy"], correct: 2},
+  {id: 3, q: "Find the de Broglie wavelength of a 0.01kg pellet having a velocity 10m/s. [h = 6.63 x 10^-34 Js]", options: ["6.63 x 10^-34m","6.63 x 10^-32m","6.63 x 10^-33m","6.63 x 10^-35m"], correct: 3},
+  {id: 4, q: "A step-up transformer is 80% efficient. It supplies a 240V, 100W lamp from a 25V supply. Determine the current in the primary coil.", options: ["50A","4.0A","2.5A","2A"], correct: 0},
+  {id: 5, q: "An object of mass 0.2kg and density 600kg/m^3 is suspended with a string so that 1/10 of it is immersed in paraffin of density 900kg/m^3. Find the tension in the string. [g = 10m/s^2]", options: ["1.0N","1.82N","2.0N","1.7N"], correct: 1},
+  {id: 6, q: "A rocket burns fuel at the rate of 20kg/s and ejects it with a velocity of 5.0 x 10^3 m/s. Calculate the thrust exerted on the rocket.", options: ["1.0 x 10^5N","2.0 x 10^5N","3.0 x 10^5N","1.0 x 10^4N"], correct: 0},
+  {id: 7, q: "Which of the following pairs are both vector quantities?", options: ["Velocity and gravitational potential","Acceleration and field strength","Momentum and work done","Moment and mass"], correct: 1},
+  {id: 8, q: "One of the limitations of Thomson’s model of the atom is that it does not explain", options: ["Small angle scattering","Stability of the atom","Ionization process","Variation of atomic radius"], correct: 1},
+  {id: 9, q: "A wire carrying a current is 2.5m long and placed in a magnetic field of flux density 0.12T at 60° to the field. If the force is 0.26N, find the current.", options: ["30.3A","20.5A","1.53A","10.5A"], correct: 2},
+  {id: 10, q: "In a transformer, the repeated reversal of magnetization of the core by alternating field causes energy loss as heat. This loss is called", options: ["Eddy current loss","Hysteresis loss","Flux linkage loss","Joule heating loss"], correct: 1},
+  {id: 11, q: "An atom is said to be excited if an electron of the atom is", options: ["In the ground state","At infinity","Promoted to an energy level higher than its original level","Having energy value of 0.0eV"], correct: 2},
+  {id: 12, q: "What happens to proton number Z and mass number A of a nuclide which emits a gamma radiation?", options: ["Z increases by 1 while A does not change","Z increases by 1 and A increases by 1","Z and A neither increase nor decrease","Z increases by 1 while A decreases by 1"], correct: 2},
+  {id: 13, q: "A note that is an octave higher than a given note of frequency 256Hz will have a frequency of", options: ["2048Hz","1024Hz","512Hz","128Hz"], correct: 2},
+  {id: 14, q: "A sound wave of frequency 130Hz and wavelength 2.0m was produced at a distance d from a target and echo was heard at the source 0.5s later. Calculate d.", options: ["650m","1300m","65m","52m"], correct: 2},
+  {id: 15, q: "Lead shot in a vertical cylinder falls through 1.0m when the cylinder is inverted. Calculate rise in temperature for 100 inversions. [Specific heat capacity of lead = 130 J/kgK, g = 10m/s^2]", options: ["3.3K","4.4K","7.7K","0.77K"], correct: 3},
+  {id: 16, q: "The QUALITY and PITCH of a musical note depend respectively on", options: ["Frequency and harmonics","Overtones and intensity","Intensity and frequency","Overtones and frequency"], correct: 3},
+  {id: 17, q: "A body is projected with velocity V at angle θ to the vertical. Which gives the horizontal component of velocity Vx?", options: ["V cos θ","V sin θ","V + g cos θ","V + g sin θ"], correct: 0},
+  {id: 18, q: "A converging lens has radius of curvature 16.0cm. Calculate the power of the lens.", options: ["12.5D","6.25D","2.5D","5.0D"], correct: 1},
+  {id: 19, q: "If velocity of light in air is 3.0 x 10^8 m/s, find velocity in a medium of refractive index 1.5", options: ["5.0 x 10^8 m/s","5.0 x 10^7 m/s","2.0 x 10^8 m/s","2.0 x 10^7 m/s"], correct: 2},
+  {id: 20, q: "When an object is at infinity to the pole of a concave mirror the image formed is", options: ["At principal focus, real and diminished","At center of curvature, real and inverted","At center of curvature, virtual and erect","At principal focus, real and erect"], correct: 0},
+  {id: 21, q: "A total eclipse of the sun is seen when the observer is in the", options: ["Umbra region of the sun's shadow","Penumbra region of the sun's shadow","Umbra region of the moon's shadow","Penumbra region of the moon's shadow"], correct: 2},
+  {id: 22, q: "A long drawn sound arising from overlapping reflections is called", options: ["Beat","Echo","Diffraction","Reverberation"], correct: 3},
+  {id: 23, q: "Which radiation is used for examining freshness of eggs in poultry?", options: ["Ultraviolet rays","X-rays","Gamma rays","Radio waves"], correct: 1},
+  {id: 24, q: "Which is not correct about electromagnetic radiation?", options: ["They are quantized","They are transverse waves","They are polarizable","They may be deflected in electric or magnetic field"], correct: 3},
+  {id: 25, q: "A simple cell with amalgamated zinc plate minimizes", options: ["Sparking","Local action","Back e.m.f","Polarization"], correct: 1},
+  {id: 26, q: "Which of the following is a mixture?", options: ["Sea water","Petroleum","Urine","All of the above"], correct: 3},
+  {id: 27, q: "Carbon forms CO and CO2. The ratio of oxygen by mass in CO to CO2 is", options: ["1:1","1:2","2:1","1:4"], correct: 1},
+  {id: 28, q: "50cm^3 of CO2 gas is measured at STP. Calculate amount in moles. [Molar gas volume = 22.4 dm^3]", options: ["0.023mol","0.0022mol","0.0002mol","0.22mol"], correct: 1},
+  {id: 29, q: "What volume of ethane is required to produce 1.12dm^3 of CO2 on combustion? 2C2H6 + 7O2 → 4CO2 + 6H2O", options: ["0.56dm^3","2.24dm^3","0.28dm^3","1.12dm^3"], correct: 0},
+  {id: 30, q: "By how much would volume increase when 10dm^3 of ozone is converted to oxygen? 2O3 → 3O2", options: ["15dm^3","5dm^3","10dm^3","20dm^3"], correct: 1},
+  {id: 31, q: "The pressure exerted by a gas results from", options: ["Continuous random motion of particles","Bombardment of container walls by molecules","Collision between gas molecules","Elastic nature of molecules"], correct: 1},
+  {id: 32, q: "Which gas will diffuse at the slowest rate?", options: ["Ammonia","Sulphur(IV) oxide","Carbon(II) oxide","Nitrogen"], correct: 1},
+  {id: 33, q: "Element P: 2,8,6. Element R: 2,8,8,1. What compound forms?", options: ["Covalent R2P","Ionic RP2","Ionic RP","Ionic P2R"], correct: 1},
+  {id: 34, q: "Phosphorus has mass number 31 and atomic number 15. Its atomic structure is", options: ["15p, 16n, 15e","15p, 16n, 16e","16p, 15n, 15e","16p, 15n, 16e"], correct: 0},
+  {id: 35, q: "Which metal has the least tendency to form positive ions?", options: ["Iron","Aluminum","Sodium","Calcium"], correct: 1},
+  {id: 36, q: "Natural water includes the following except", options: ["Rain water","Spring water","Pure water","Lake water"], correct: 2},
+  {id: 37, q: "Which cannot remove permanent hardness in water?", options: ["Washing soda","Caustic soda","Permutit method","Alum"], correct: 3},
+  {id: 38, q: "Solubility of Na2SO4 at 30°C is 18g per 100g water. In g/kg?", options: ["180g/kg","18g/kg","1.8g/kg","1800g/kg"], correct: 0},
+  {id: 39, q: "Which is not a colloid?", options: ["Milk","Starch in water","Aerosol spray","Ammonium chloride solution"], correct: 3},
+  {id: 40, q: "pH of M,N,O,P are 4,6,8,10. Which is most acidic?", options: ["None is acidic","O","P","M"], correct: 3},
+  {id: 41, q: "Sodium chloride is obtained from brine by", options: ["Decantation","Distillation","Evaporation","Sublimation"], correct: 2},
+  {id: 42, q: "Oil spillage in ponds can be cleaned by", options: ["Burning oil layer","Spraying with detergent","Spraying with common salt","Spraying with hot oil"], correct: 1},
+  {id: 43, q: "Which is a chemical compound?", options: ["Soap","Milk","Urine","Gold"], correct: 0},
+  {id: 44, q: "Crystallization is used where", options: ["Purity of product is important","Beauty is important","One product is solid","Salt cannot be destroyed by heat"], correct: 0},
+  {id: 45, q: "Which hydroxide forms alkaline solution in water?", options: ["Aluminum hydroxide","Copper hydroxide","Sodium hydroxide","Iron(III) hydroxide"], correct: 2},
+  {id: 46, q: "Which cannot be used as an oxidizing agent?", options: ["Cracking","Hydrolysis","Oxidation","Reduction"], correct: 3},
+  {id: 47, q: "Which cannot be used as an oxidizing agent?", options: ["K2Cr2O7","CO2","H2O2","HNO3"], correct: 1},
+  {id: 48, q: "Number of pairs of shared electrons in methane molecule?", options: ["1","2","4","8"], correct: 2},
+  {id: 49, q: "Percentage by volume of nitrogen in air is high because", options: ["Nitrogen is relatively inactive","Nitrogen supports life","Nitrogen prevents corrosion","Nitrogen increases combustion"], correct: 0},
+  {id: 50, q: "Same quantity of electricity deposits 18g Al. How much Cu is deposited? [Al=27, Cu=64]", options: ["64g","32g","48g","16g"], correct: 2},
+  {id: 51, q: "When two alleles are present and one shows, it is called", options: ["Important character","Dominant character","Superior character","Controlling character"], correct: 1},
+  {id: 52, q: "In Nigeria, tropical rain forest is found in", options: ["Sokoto","Kaduna","Abuja","Abia"], correct: 3},
+  {id: 53, q: "Sum total of biotic and abiotic factors is", options: ["Environment","Lithosphere","Hydrosphere","Atmosphere"], correct: 0},
+  {id: 54, q: "Hydrometer measures", options: ["Rainfall","Humidity","Temperature","Density of liquid"], correct: 3},
+  {id: 55, q: "Which is air borne?", options: ["Malaria","Yellow fever","Cholera","Tuberculosis"], correct: 3},
+  {id: 56, q: "Candida albicans is a", options: ["Bacterium","Fungus","Virus","Protozoan"], correct: 1},
+  {id: 57, q: "All are vertebrates except", options: ["Lizard","Rat","Star fish","Tilapia"], correct: 2},
+  {id: 58, q: "Grass under a box turns yellow due to lack of", options: ["Carbon dioxide","Light","Oxygen","Water"], correct: 1},
+  {id: 59, q: "Which organ deaminates excess amino acids?", options: ["Duodenum","Ileum","Liver","Kidney"], correct: 2},
+  {id: 60, q: "Meiosis occurs in which flower part?", options: ["Anther","Petal","Receptacle","Style"], correct: 0},
+  {id: 61, q: "Movement of whole organism towards stimulus is", options: ["Tropic movement","Nastic movement","Tactic movement","Phototropism"], correct: 2},
+  {id: 62, q: "Stable self-sustaining environment of biotic and abiotic components is", options: ["Niche","Community","Ecosystem","Habitat"], correct: 2},
+  {id: 63, q: "Which is not present in nucleus?", options: ["Chromosome","Nucleolus","Gene","Mitochondria"], correct: 3},
+  {id: 64, q: "Release of useful substances from cells is", options: ["Excretion","Evacuation","Metabolism","Secretion"], correct: 3},
+  {id: 65, q: "Head of femur articulates with pelvis at", options: ["Glenoid cavity","Olecranon process","Acetabulum","Coracoid process"], correct: 2},
+  {id: 66, q: "Number of cervical vertebrae in mammals is", options: ["4","7","12","5"], correct: 1},
+  {id: 67, q: "Mechanism for rise of water to tops of tall trees?", options: ["Transpiration pull","Root pressure","Osmosis","Capillarity"], correct: 0},
+  {id: 68, q: "Antibodies in blood are formed by", options: ["Platelets","White blood cells","Red blood cells","Liver"], correct: 1},
+  {id: 69, q: "Liquid that supplies cells with oxygen and nutrients?", options: ["Blood","Plasma","Serum","Lymph"], correct: 1},
+  {id: 70, q: "Cockroach and grasshopper have mouthparts for", options: ["Sucking","Piercing and sucking","Biting and chewing","Biting and lapping"], correct: 2},
+  {id: 71, q: "Sponging and lapping mouthpart occurs in", options: ["Butterfly","Cockroach","Housefly","Mosquito"], correct: 2},
+  {id: 72, q: "Which is not sex-linked?", options: ["Baldness","Color blindness","Hemophilia","Height"], correct: 3},
+  {id: 73, q: "Which is a vestigial structure?", options: ["Appendix","Caecum","Pancreas","Sacculus rotundus"], correct: 0},
+
+  // 27 NEW VERY DIFFICULT QUESTIONS ADDED
+  {id: 74, q: "A particle in a 1D box of length L has energy E1. If L is doubled, the new ground state energy is", options: ["E1/4","E1/2","2E1","4E1"], correct: 0},
+  {id: 75, q: "The pH of 0.001M HCl is", options: ["1","2","3","4"], correct: 2},
+  {id: 76, q: "For a first order reaction, half-life is 20min. Time to reduce to 12.5% is", options: ["40min","60min","80min","100min"], correct: 1},
+  {id: 77, q: "Which hybrid orbitals form in sp3d2 hybridization?", options: ["Tetrahedral","Trigonal bipyramidal","Octahedral","Linear"], correct: 2},
+  {id: 78, q: "A 2kg block slides down a 30° frictionless incline from rest. Speed after 5s is [g=10]", options: ["25m/s","50m/s","5m/s","10m/s"], correct: 0},
+  {id: 79, q: "In DNA, which base pairs with Adenine?", options: ["Guanine","Cytosine","Thymine","Uracil"], correct: 2},
+  {id: 80, q: "The osmotic pressure of 0.1M NaCl at 27°C is [R=0.0821 L.atm/mol.K]", options: ["2.46 atm","4.92 atm","1.23 atm","0.82 atm"], correct: 1},
+  {id: 81, q: "Which has highest lattice energy?", options: ["NaCl","MgO","KCl","LiF"], correct: 1},
+  {id: 82, q: "A capacitor 10μF charged to 100V is discharged through 1kΩ. Time constant is", options: ["0.01s","0.1s","1s","10s"], correct: 0},
+  {id: 83, q: "In Hardy-Weinberg, if q=0.4, frequency of heterozygotes is", options: ["0.16","0.48","0.24","0.32"], correct: 1},
+  {id: 84, q: "Which enzyme catalyzes ATP synthesis in mitochondria?", options: ["DNA polymerase","ATP synthase","Rubisco","Lipase"], correct: 1},
+  {id: 85, q: "For an ideal gas, if P doubles and T halves at constant n, V becomes", options: ["1/4 original","1/2 original","Same","2x original"], correct: 0},
+  {id: 86, q: "The wavelength of light with frequency 5 x 10^14 Hz is", options: ["600nm","300nm","150nm","1200nm"], correct: 0},
+  {id: 87, q: "Which is not a buffer system in human blood?", options: ["Carbonic acid-bicarbonate","Phosphate","Protein","Glucose"], correct: 3},
+  {id: 88, q: "E° for Zn2+/Zn = -0.76V, Cu2+/Cu = +0.34V. EMF of Zn-Cu cell is", options: ["1.10V","0.42V","-1.10V","0.76V"], correct: 0},
+  {id: 89, q: "In projectile motion, max height is proportional to", options: ["sinθ","sin²θ","cosθ","cos²θ"], correct: 1},
+  {id: 90, q: "Which mutation changes one base pair?", options: ["Deletion","Insertion","Substitution","Translocation"], correct: 2},
+  {id: 91, q: "For a gas, Cp - Cv =", options: ["0","R","2R","nR"], correct: 1},
+  {id: 92, q: "The coordination number in FCC crystal is", options: ["4","6","8","12"], correct: 3},
+  {id: 93, q: "Which has highest ionization energy?", options: ["Na","Mg","Al","Si"], correct: 3},
+  {id: 94, q: "In an AC circuit, phase difference between V and I in pure inductor is", options: ["0°","90°","180°","270°"], correct: 1},
+  {id: 95, q: "Which is a secondary metabolite?", options: ["Glucose","Amino acid","Alkaloid","Fatty acid"], correct: 2},
+  {id: 96, q: "For zero order reaction, plot of [A] vs t gives", options: ["Curve","Straight line with +ve slope","Straight line with -ve slope","Exponential"], correct: 2},
+  {id: 97, q: "The magnetic field at center of circular coil of N turns is proportional to", options: ["1/N","N²","N","1/N²"], correct: 2},
+  {id: 98, q: "Which vitamin deficiency causes scurvy?", options: ["Vitamin A","Vitamin B1","Vitamin C","Vitamin D"], correct: 2},
+  {id: 99, q: "In glycolysis, net ATP produced per glucose is", options: ["2","4","6","8"], correct: 0},
+  {id: 100, q: "A body moving with SHM has max acceleration at", options: ["Mean position","Extreme position","Quarter amplitude","Half amplitude"], correct: 1}
+];
+  
+  
+
+let testQuestions = [];
+let userAnswers = [];
+let selectedNumQuestions = 0;
+let selectedTimeMinutes = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let showOnlyWrong = false;
+
+function selectQuestions(num){
+  selectedNumQuestions = num;
+  checkReady();
+}
+
+function selectTime(mins, event){
+  selectedTimeMinutes = mins;
+  document.querySelectorAll('.btn-time').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  checkReady();
+}
+
+function checkReady(){
+  if(selectedNumQuestions > 0 && selectedTimeMinutes > 0){
+    document.getElementById("startBtn").disabled = false;
+  }
+}
+
+
+
+function startTest(){
+  const courseId = "jamb_cbt";
+  const studentId = "student123";
+  const storageKey = `seen_${studentId}_${courseId}`;
+
+  let seenIds = JSON.parse(localStorage.getItem(storageKey) || "[]");
+  let available = questionBank.filter(q =>!seenIds.includes(q.id));
+
+  if(available.length < selectedNumQuestions){
+    localStorage.removeItem(storageKey);
+    seenIds = [];
+    available = questionBank;
+  }
+
+  testQuestions = shuffleArray(available).slice(0, selectedNumQuestions);
+  let newSeenIds = [...seenIds,...testQuestions.map(q => q.id)];
+  localStorage.setItem(storageKey, JSON.stringify(newSeenIds));
+
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("timer").style.display = "block";
+  startTimer(selectedTimeMinutes * 60);
+  displayQuestions(testQuestions);
+}
+
+function shuffleArray(arr){
+  let array = [...arr];
+  for(let i = array.length-1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function displayQuestions(questions){
+  let html = "<h3>Your Test</h3>";
+  questions.forEach((q, index) => {
+    html += `<div class="q">
+<p><b>${index+1}. ${q.q}</b></p>
+      ${q.options.map((opt, i) => `
+<label>
+<input type="radio" name="q${index}" value="${i}"> ${opt}
+</label>
+      `).join('')}
+</div>`;
+  });
+  html += `<button class="btn-primary" onclick="submitTest()">Submit</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function startTimer(seconds){
+  timeLeft = seconds;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      alert("Time's up! Submitting your test automatically.");
+      submitTest();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  let mins = Math.floor(timeLeft / 60);
+  let secs = timeLeft % 60;
+  document.getElementById("timer").textContent =
+    `Time Left: ${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+
+function submitTest(){
+  clearInterval(timerInterval);
+  userAnswers = [];
+  let correctCount = 0;
+  let wrongCount = 0;
+
+  testQuestions.forEach((q, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    const userAnsIndex = selected? parseInt(selected.value) : -1;
+    const isCorrect = userAnsIndex === q.correct;
+
+    if(isCorrect) correctCount++;
+    else wrongCount++;
+
+    userAnswers.push({
+      question: q.q,
+      userAnswer: userAnsIndex === -1? "Not Answered" : q.options[userAnsIndex],
+      correctAnswer: q.options[q.correct],
+      isCorrect: isCorrect,
+      originalIndex: index + 1
+    });
+  });
+
+  const total = testQuestions.length;
+  const percentCorrect = ((correctCount / total) * 100).toFixed(1);
+  const percentWrong = ((wrongCount / total) * 100).toFixed(1);
+  displayResults(correctCount, wrongCount, total, percentCorrect, percentWrong);
+}
+
+function displayResults(correct, wrong, total, percentCorrect, percentWrong){
+  document.getElementById("timer").style.display = "none";
+  let html = `
+<h2>Test Submitted!</h2>
+<div class="stats-box">
+<h3>Score Statistics</h3>
+<p><b>Total Questions:</b> ${total}</p>
+<p style="color:green;"><b>Correct:</b> ${correct} (${percentCorrect}%)</p>
+<p style="color:red;"><b>Wrong/Not Answered:</b> ${wrong} (${percentWrong}%)</p>
+<p><b>Score:</b> ${correct}/${total}</p>
+</div>
+<div style="margin-bottom:15px;">
+<button id="toggleBtn" class="btn-primary" onclick="toggleReview()">
+        ${showOnlyWrong? 'Show All Questions' : 'Show Only Wrong Answers'}
+</button>
+</div>
+<h3>Question Review</h3>
+<div id="reviewContainer">`;
+
+  const questionsToShow = showOnlyWrong
+   ? userAnswers.filter(item =>!item.isCorrect)
+    : userAnswers;
+
+  questionsToShow.forEach((item) => {
+    const statusColor = item.isCorrect? "green" : "red";
+    const statusText = item.isCorrect? "✓ Correct" : "✗ Wrong";
+    html += `
+<div class="q" style="border-left: 5px solid ${statusColor};">
+<p><b>${item.originalIndex}. ${item.question}</b>
+<span style="color:${statusColor}; float:right;">${statusText}</span>
+</p>
+<p><b>Your Answer:</b> ${item.userAnswer}</p>
+        ${!item.isCorrect? `<p style="color:green;"><b>Correct Answer:</b> ${item.correctAnswer}</p>` : ''}
+</div>`;
+  });
+
+  html += `</div>
+<button class="btn-primary" onclick="location.reload()">Take Another Test</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function toggleReview(){
+  showOnlyWrong =!showOnlyWrong;
+  const correct = userAnswers.filter(a => a.isCorrect).length;
+  const wrong = userAnswers.length - correct;
+  const total = userAnswers.length;
+  const percentCorrect = ((correct / total) * 100).toFixed(1);
+  const percentWrong = ((wrong / total) * 100).toFixed(1);
+  displayResults(correct, wrong, total, percentCorrect, percentWrong);
+}
+
+function resetSeenQuestions(){
+  const courseId = "jamb_cbt";
+  const studentId = "student123";
+  const storageKey = `seen_${studentId}_${courseId}`;
+  localStorage.removeItem(storageKey);
+  alert("Question history reset.");
+  location.reload();
+}
+</script>
+</body>
+</html>
+
