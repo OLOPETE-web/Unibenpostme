@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>CBT Pro</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #f0f2f5; 
+    padding: 20px; 
+    max-width: 900px; 
+    margin: auto; 
+    color: #333;
+  }
+
+  h2, h3, h4 { color: #007bff; margin-bottom: 10px; }
+
+  #setup { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    text-align: center;
+  }
+
+ .q { 
+    margin-bottom: 20px; 
+    padding: 20px; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 10px; 
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: 0.2s;
+  }
+ .q:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+ .q p { margin: 0 0 15px 0; font-size: 17px; font-weight: 600; line-height: 1.5; }
+
+  label { 
+    display: block; 
+    margin: 10px 0; 
+    cursor: pointer; 
+    padding: 12px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    transition: 0.2s;
+  }
+  label:hover { background: #e7f3ff; border-color: #00bcff; }
+  input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+  button { 
+    padding: 14px 28px; 
+    margin: 10px 8px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 16px; 
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  button:hover { transform: translateY(-2px); }
+
+.btn-primary { background: #00bcff; color: white; }
+.btn-primary:hover { background: #0099cc; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #b02a37; }
+
+.btn-time { background: #e9ecef; color: #333; border: 2px solid transparent; }
+.btn-time.active { background: #007bff; color: white; border-color: #007bff; }
+
+.timer { 
+    position: sticky; 
+    top: 10px; 
+    background: linear-gradient(90deg, #ff9800, #ff5722); 
+    color: white; 
+    padding: 15px; 
+    text-align: center; 
+    font-size: 20px; 
+    font-weight: bold; 
+    border-radius: 10px; 
+    margin-bottom: 20px; 
+    display: none; 
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(255,152,0,0.3);
+  }
+
+.stats-box { 
+    background:white; 
+    padding:25px; 
+    border-radius:12px; 
+    margin-bottom:20px; 
+    border:1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+.stats-box h3 { font-size: 28px; color: #00bcff; }
+
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .q { padding: 15px; }
+    button { width: 100%; margin: 8px 0; }
+    .timer { font-size: 18px; padding: 12px; }
+}
+  /* NEW: PASSAGE BOX */
+.passage-box {
+    background: #f8f9ff;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+.passage-box summary {
+    padding: 12px 15px;
+    font-weight: 700;
+    color: #667eea;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1rem;
+  }
+.passage-box summary:after { content: ' ▼'; float: right; }
+.passage-box[open] summary:after { content: ' ▲'; }
+.passage-content {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    max-height: 250px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 0.95rem;
+ }
+</style>
+</head>
+<body>
+
+<div id="setup">
+<h2>Select Test Type</h2>
+<h4>1. Choose number of questions:</h4>
+<button class="btn-primary" onclick="selectQuestions(20)">20 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(30)">30 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(40)">40 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(50)">50 Questions</button>
+
+<h4>2. Choose time:</h4>
+<div id="timeOptions">
+<button class="btn-time" onclick="selectTime(20, event)">20 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">30 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">40 mins</button>
+<button class="btn-time" onclick="selectTime(60, event)">1 hr</button>
+</div>
+<br>
+<button class="btn-primary" onclick="startTest()" id="startBtn" disabled>Start Test</button>
+</div>
+
+<div class="timer" id="timer"></div>
+<div id="quiz"></div>
+
+<script>
+// 1. PUT YOUR PASSAGES HERE
+const passages = {
+ 1: {
+    title: "PASSAGE I:",
+    text: `From ancient times, people commonly believed that life arose repeatedly by spontaneous generation from non-
+living material in addition to parental reproduction for example frogs appeared to arise from damp earth, mice from
+putrefied matter, and insects from dew maggots from decaying meat. Warmth, moisture, sunlight, and even starlight
+often were mentioned as factors that encourage spontaneous generation of living organisms.
+<br>Among the accounts of early efforts to synthesize organism in the laboratory is a recipe for making mice
+given by the Belgian plant nutritionist Jean Baptiste Van Helmont (648). If you press a piece of underwear soiled
+with sweat together with some wheat in an open jar, after about twenty one days the odour changes and the ferment...
+changes the wheat into mice. But what is more remarkable is that the mice which came out of the wheat and underwear
+were not small mice, not miniature adults or aborted mice but adult mice emerge”.
+<br>In 1861, the great French scientist Lousis Pasteur convinced scientists that living organisms cannot arise
+spontaneously from non-living matter. In his famous experiments, Pasteur introduced fermentable material into a flask
+with a long Shaped neck that was open to air. The flask was cooled and left undisturbed. No fermentation occurred
+because all organisms that entered the open end were deposited in the open neck and did not reach the fermentable
+material. When the neck of the flask was removed micro-organisms in the air promptly entered the fermentable material
+organisms and their reproductive elements such as eggs and sport. Announcing his results to the French Academy,
+Pasteur productive “Never will the doctrine of spontaneous generation arise from this mortal below. All living
+organisms share a common ancestor, most likely a population of colonial micro-organism that lived almost four billion
+years ago. This common ancestor was itself a product of a long period of preblole assembly of non-living matter
+including organic molecules and water to form self-replicating units. All living organisms retain a fundamental
+chemical composition inherited from their ancient.`
+  },
+ 2: {
+    title: "PASSAGE II:",
+    text: `When we survey all known human societies we find every where a for of the family some set of people
+permanent arrangement by which males assist females in caring for children while they are young. The distinctively
+human aspect of the enterprise lies not in the protection the male affords the female and the young. This we share with
+the primates. Nor does it lie in the lordly possessiveness of the male over females instead in the nurturing behaviour
+of the male who among human beings every where helps provide food for woman and children.
+<br>Among our structurally closed analogues the primates the male does not feed the female he may fight to protect
+her or to possess her. But he does not nurture her was to fend herself. Somewhere at the dawn of human history some
+social invention was under which males started nurturing females and their young. In every known human society,
+everywhere in the world, the young male learns that when he grows up one of the things which he must do in order to
+be a full member of the society is to escape the burden of feeding females and the young by entering Monasteries and
+feeding each other or by entering some profession that their society will classify as giving them a right to be fed, like
+the Army and the Navy, or the Buddhist order of Burma. But in spite of such exception, every known human rest firmly
+on the learned nurturing behaviour of men.`
+  },
+  3: {
+    title: "FILL PASSAGE",
+    text: `By the 28th week, that is the end of the 7th ___, the focus move around vigorously with the ___ and its heart can be heard
+by the ___ its, length is 38cm (15 inches) its weight 100grams, its body is thin, its skin reddish and covered with a ___
+coating of creamy, waxy substance, which is manufactured by small in the skin. It can open up its eye, and the ___
+covering the pupils of the ___ has gone. If it is ___ at this stage it can ___ but with difficulty. It can also cry ___ but ___ its
+legs energetically.`
+  }
+};
+
+// 2. ADD passageId TO QUESTIONS THAT USE A PASSAGE
+const questionBank = [
+{id: 1, passageId: 1, q: "Throughout the passage, the word 'spontaneous' can best be taken to mean", options: ["Without reproductive elements","In a medium","Unthinking","Arising without external cause"], correct: 3},
+  {id: 2, passageId: 1, q: "In Pasteur's experiment, why was the neck of the flask removed?", options: ["To allow air to escape","To provide access to remove the fermentable material","To allow microorganisms to enter the fermentable material","To cool the flask"], correct: 2},
+  {id: 3, passageId: 1, q: "In the third paragraph, the word 'mortal' most nearly means", options: ["Human","Impermanent","Fatal","Earthly"], correct: 3},
+  {id: 4, passageId: 1, q: "The expression 'when the neck of the flask was removed' can be described as", options: ["Adverbial clause of time","Adjectival clause","Noun clause","Adverbial phrase of time"], correct: 0},
+  {id: 5, passageId: 1, q: "In what sense is the use of the word 'water' in the last paragraph ironic?", options: ["It is a medium in which many living organisms thrive","It has a relatively low boiling point","Pasteur did not mention it specifically","It was not one of the ingredients in Helmont's recipe"], correct: 2},
+
+  // PASSAGE 2 = 6-10
+  {id: 6, passageId: 2, q: "Man differs from other animals because", options: ["He forms family","He cares for children","He cares for woman and children","He provides food for woman and children"], correct: 3},
+  {id: 7, passageId: 2, q: "'The lordly possessiveness' of the male over the females means that the male", options: ["Shows mastery over the female","Is more aggressive toward the female","Claims right over the female","Protects the female"], correct: 2},
+  {id: 8, passageId: 2, q: "'Somewhere at the dawn of history' refers to", options: ["The beginning of creation","The creation of man","The time when man was yet monkey","The beginning of civilization"], correct: 3},
+  {id: 9, passageId: 2, q: "Man takes it upon himself to feed the females except when", options: ["He takes up the gun to fight","He becomes religious","He joins a religion","He enters some profession like Army or Monastery"], correct: 3},
+  {id: 10, passageId: 2, q: "According to the passage, a common feature of all human communities is", options: ["The family","Caring mothers","Aggressive fathers","Nurtured woman and children"], correct: 0},
+
+  // CLOZE TEST = 11-20
+  {id: 11, passageId: 3, q: "By the 28th week, that is the end of the 7th ___", options: ["Day","Week","Month","Year"], correct: 2},
+  {id: 12, passageId: 3, q: "The focus move around vigorously with the ___", options: ["Stomach","Uterus","Bladder","Belly"], correct: 1},
+  {id: 13, passageId: 3, q: "Its heart can be heard by the ___", options: ["Audience","Woman","Crowd","Doctor"], correct: 3},
+  {id: 14, passageId: 3, q: "Skin covered with a ___ coating of creamy waxy substance", options: ["Membrane","Kicking","Plastic","Protective"], correct: 3},
+  {id: 15, passageId: 3, q: "The ___ covering the pupils", options: ["Membrane","Hand","Glass","Rubber"], correct: 0},
+  {id: 16, passageId: 3, q: "Covering the pupils of the ___", options: ["Eyes","Class","Mouth","Uterus"], correct: 0},
+  {id: 17, passageId: 3, q: "If it is ___ at this stage", options: ["Left","Sent","Discharged","Born"], correct: 3},
+  {id: 18, passageId: 3, q: "It can ___ but with difficulty", options: ["Breath","See","Hear","Eat"], correct: 0},
+  {id: 19, passageId: 3, q: "It can also cry ___", options: ["Angrily","Weakly","Loudly","Strongly"], correct: 1},
+  {id: 20, passageId: 3, q: "It can ___ its legs energetically", options: ["Walk","Move","Wraps","Fold"], correct: 1},
+
+  // OPPOSITES = 21-25
+  {id: 21, q: "Opposite of 'consultation' in 'instead of resorting to ___'", options: ["Mediation","Confrontation","Arbitration","Exultation"], correct: 1},
+  {id: 22, q: "Opposite of 'alcoholic'", options: ["Teetotaler","Dipsomaniac","Agoraphobic","Saboteur"], correct: 0},
+  {id: 23, q: "Opposite of 'parsimonious'", options: ["Ingenious","Curious","Judicious","Extravagant"], correct: 3},
+  {id: 24, q: "Opposite of 'lackadaisical'", options: ["Enthusiastic","Listless","Classical","Obtuse"], correct: 0},
+  {id: 25, q: "Opposite of 'wrath'", options: ["Anger","Anointing","Favour","Pleasure"], correct: 2},
+
+  // SENTENCE COMPLETION = 26-27
+  {id: 26, q: "The rich man ___ to his wives and children every Monday", options: ["Disperses","Dispensed","Discusses","Dispenses"], correct: 3},
+  {id: 27, q: "If I had known, I would not have ___ too much confidence in him", options: ["Imposed","Reposed","Inputted","Disposed"], correct: 1},
+
+  // SECTION B: GENERAL PAPER = 28-77 = 50 QUESTIONS
+  // BIOLOGY 10
+  {id: 28, q: "Which of the following is the large single cell in the body?", options: ["Neutron","Ovum","Liver cell","Muscle cell"], correct: 1},
+  {id: 29, q: "Blue-green algae belong to the phylum", options: ["Cyanophyta","Schizophyta","Chlorophyta","Chrysophyta"], correct: 0},
+  {id: 30, q: "The concept of antibiotics started with the work of", options: ["Gregor Mendel","Mary Slessor","Louis Pasteur","Alexander Fleming"], correct: 3},
+  {id: 31, q: "The botanical name for yellow yam is", options: ["Dioscorea gayanesis","Dioscorea rotunda","Dioscorea alata","Dioscorea dumentorum"], correct: 2},
+  {id: 32, q: "Which tissue is made of dead cells?", options: ["Xylem vessels","Cambium","Mesophyll","Palisade"], correct: 0},
+  {id: 33, q: "Which is not a function of the liver?", options: ["Storage of iron","Formation of bile","Breakdown of excess amino acids","Excretion of urea from blood"], correct: 3},
+  {id: 34, q: "Alkaline pyrogallol was used in an experiment connected with", options: ["Respiration","Photosynthesis","Transportation","Excretion"], correct: 0},
+  {id: 35, q: "The enzyme that breaks down cane sugar is", options: ["Lipase","Ptyalin","Invertase","Peptidase"], correct: 2},
+  {id: 36, q: "The largest single bone in the body is the", options: ["Scapula","Humerus","Femur","Skull"], correct: 2},
+  {id: 37, q: "Auxins are produced in the", options: ["Root and stem apex","Young leaves and nodes","Flower bud and apex","Seeds"], correct: 0},
+
+  // BIOLOGY + ECOLOGY 10
+  {id: 38, q: "The hormone which tones up muscles in time of danger is from", options: ["Thyroid gland","Pancreas","Adrenal gland","Sebaceous gland"], correct: 2},
+  {id: 39, q: "A diet with high iodine is needed for malfunction of", options: ["Thyroid gland","Adrenal gland","Nervous system","Circulatory system"], correct: 0},
+  {id: 40, q: "Sampling method is not often used in ecology because", options: ["Area is usually large","Some areas are more important","Plants live in small communities","Animals are migratory"], correct: 0},
+  {id: 41, q: "Which group are abiotic factors?", options: ["Soil, water, bacteria, salinity","Salinity, tide, plankton, turbidity","Wind, altitude, humidity, light","Trees, wind, pH, rainfall"], correct: 2},
+  {id: 42, q: "Nitrogen-fixing bacteria and cowpea show", options: ["Predation","Parasitism","Mutualism","Commensalism"], correct: 2},
+  {id: 43, q: "Plants that live in salty water are called", options: ["Hydrophytes","Xerophytes","Halophytes","Salinophytes"], correct: 2},
+  {id: 44, q: "Soil + water in cylinder left for 1hr tests", options: ["Capillarity","Relative density","Water retaining capacity","Presence of air"], correct: 2},
+  {id: 45, q: "Farmer in swamp cannot contact", options: ["Bilharzia","Malaria","Cholera","Sleeping sickness"], correct: 3},
+  {id: 46, q: "Element added to water to lessen dental decay", options: ["Calcium","Phosphorus","Fluorine","Chlorine"], correct: 2},
+  {id: 47, q: "Normal man x woman with sickle cell trait. Child has sickle cell trait genotype", options: ["SS","AS","AO","AA"], correct: 1},
+
+  // CHEMISTRY 10
+  {id: 48, q: "Trichloroethene is separated from grease by", options: ["Chromatography","Crystallization","Distillation","Filtration"], correct: 2},
+  {id: 49, q: "Mass of ZnSO4 from 50cm3 of 4.0M H2SO4 + excess ZnCO3 [Zn=65,S=32,O=16]", options: ["32.2g","37.5g","38.6g","34.3g"], correct: 1},
+  {id: 50, q: "Order of increasing atomic radius: Li, Be, B, C", options: ["C,B,Be,Li","Li,Be,B,C","Li,C,B,Be","C,Li,Be,B"], correct: 0},
+  {id: 51, q: "Argon is used in electric lamps because", options: ["It is radioactive","It has low pressure","It is combustible","It prevents oxidation"], correct: 3},
+  {id: 52, q: "250cm3 saturated KNO3 at 30°C gave 3.4g. Solubility in mol/dm3 [K=39,N=14,O=16]", options: ["0.112","0.118","0.124","0.134"], correct: 3},
+  {id: 53, q: "pH 3.80. [H+] concentration is", options: ["1.58 x 10^-4","1.58 x 10^-3","1.58 x 10^-2","1.58 x 10^-1"], correct: 1},
+  {id: 54, q: "Which is NOT an acid?", options: ["Aluminum chloride","Zinc chloride","Copper(II) tetraoxosulphate","Silver chloride"], correct: 3},
+  {id: 55, q: "Current to produce 18.0g Al in 1.5hr [Al=27,F=96500]", options: ["33.65A","53.74A","37.83A","40.21A"], correct: 1},
+  {id: 56, q: "Oxidation number of Cl in HClO4", options: ["+7","+2","+5","+1"], correct: 0},
+  {id: 57, q: "Bond in H2 molecule is due to", options: ["Mutual attraction","Mutual sharing of electron cloud","Dative bond","Same spin electrons"], correct: 1},
+
+  // CHEMISTRY + PHYSICS 10
+  {id: 58, q: "Which statements about catalyst are correct? 1.Small amount affects rate 2.Unchanged 3.Promoters help 4.Physically unchanged 5.Speeds up reaction", options: ["1,2,3,4,5","1,2,3 only","2,3,4 only","2,4 only"], correct: 0},
+  {id: 59, q: "K2Cr2O7 + H2SO4. Colour change from orange to", options: ["Orange","Yellow","Pink","Colourless"], correct: 1},
+  {id: 60, q: "Which is NOT true of H2S?", options: ["Liquid at room temp","Covalent compound","Weak dibasic acid","Stronger reducing agent than water"], correct: 0},
+  {id: 61, q: "Acid hydrolysis of sucrose gives", options: ["Fructose and maltose","Glucose and cellulose","Maltose and cellulose","Glucose and fructose"], correct: 3},
+  {id: 62, q: "Concentration of 0.28g KOH in 100cm3 [K=39,O=16,H=1]", options: ["0.05M","0.5M","0.005M","5.0M"], correct: 0},
+  {id: 63, q: "Distance between P(8,5,3) and Q(2,1,-2)", options: ["8.03","7.32","15.00","8.77"], correct: 3},
+  {id: 64, q: "Man walks SE 4m/s, another N 3m/s for 10s. Distance apart", options: ["80.3m","28.3m","64.7m","41.97m"], correct: 1},
+  {id: 65, q: "Centre of gravity of rectangle is at", options: ["Intersection of medians","Middle of rectangle","Intersection of diagonals","Any vertex"], correct: 2},
+  {id: 66, q: "Meter rule 1.0N pivoted at 40cm. 2.0N at 15cm. Where to place 2.0N to balance?", options: ["60cm","45cm","55cm","35cm"], correct: 2},
+  {id: 67, q: "Two plane mirrors at 60°. Number of images", options: ["6","2","5","11"], correct: 0},
+
+  // PHYSICS 10
+  {id: 68, q: "Oil drop on 100cm2 spreads until film is", options: ["30 molecules thick","Fills 100cm2","Volume constant","Not less than one molecule thick"], correct: 3},
+  {id: 69, q: "Brownian motion of smoke particle is because", options: ["Light intensity varies","Affected by gravity","O2 molecules hit it randomly","High speed of particle"], correct: 2},
+  {id: 70, q: "Siren 200 holes, 132 rpm. Frequency of note", options: ["26400Hz","1.52Hz","440Hz","0.66Hz"], correct: 2},
+  {id: 71, q: "Concave mirror f=20cm, image 1/2 size. Object distance", options: ["20cm","60cm","100cm","80cm"], correct: 1},
+  {id: 72, q: "Pool 12m deep, n=4/3. Apparent depth", options: ["16.0m","48.0m","9.0m","36.0m"], correct: 2},
+  {id: 73, q: "Which is NOT true about eye and camera?", options: ["Lens is fixed","Image on retina","Iris controls light","Lens changes shape"], correct: 0},
+  {id: 74, q: "Potentiometer: 3.0m balances cell, 2.0m with 4Ω across. Internal resistance", options: ["1.0Ω","0.5Ω","1.5Ω","2.0Ω"], correct: 1},
+  {id: 75, q: "Steady current in solenoid. Which is true?", options: ["Settles N-S","Both ends S pole","Both ends N pole","Field only at ends"], correct: 0},
+  {id: 76, q: "Transformer 400:200 turns, Vp=24V, Ip=3A, Is=5A. Efficiency", options: ["60%","50%","83%","62%"], correct: 2},
+  {id: 77, q: "p-n junction forward biased gives", options: ["Large current","Small current","No current","Current remains same"], correct: 0},
+
+  // 23 NEW VERY DIFFICULT QUESTIONS TO MAKE 100
+  {id: 78, q: "In DNA replication, which enzyme joins Okazaki fragments?", options: ["DNA ligase","DNA polymerase","Helicase","Primase"], correct: 0},
+  {id: 79, q: "pH of buffer with pKa 4.76, [A-]=0.2, [HA]=0.02", options: ["3.76","4.76","5.76","6.76"], correct: 2},
+  {id: 80, q: "For first order reaction, t1/2=10min. Time for 87.5% completion", options: ["20min","30min","40min","50min"], correct: 1},
+  {id: 81, q: "Which has sp3d hybridization?", options: ["CH4","NH3","PCl5","H2O"], correct: 2},
+  {id: 82, q: "Entropy increases when", options: ["Gas to liquid","Liquid to solid","Solid to gas","Crystallization"], correct: 2},
+  {id: 83, q: "Wavelength of photon with energy 3.1eV", options: ["200nm","400nm","600nm","800nm"], correct: 1},
+  {id: 84, q: "In SHM, kinetic energy is max at", options: ["Extreme","Mean position","Quarter amplitude","Half amplitude"], correct: 1},
+  {id: 85, q: "Which is not a vector?", options: ["Displacement","Force","Work","Momentum"], correct: 2},
+  {id: 86, q: "Capillary rise is inversely proportional to", options: ["Surface tension","Tube radius","Liquid density","Contact angle"], correct: 1},
+  {id: 87, q: "Binding energy per nucleon is highest for", options: ["H-2","Fe-56","U-235","He-4"], correct: 1},
+  {id: 88, q: "Which hormone lowers blood glucose?", options: ["Glucagon","Insulin","Adrenaline","Cortisol"], correct: 1},
+  {id: 89, q: "Number of ATP from 1 FADH2 in ETC", options: ["1","2","3","4"], correct: 1},
+  {id: 90, q: "Which is a sex-linked recessive disorder?", options: ["Albinism","Sickle cell","Hemophilia","Cystic fibrosis"], correct: 2},
+  {id: 91, q: "Photosynthesis light reactions occur in", options: ["Stroma","Grana","Cytoplasm","Mitochondria"], correct: 1},
+  {id: 92, q: "Kp = Kc(RT)^Δn. For N2 + 3H2 ⇌ 2NH3, Δn =", options: ["-2","-1","0","+1"], correct: 0},
+  {id: 93, q: "Which element has highest electronegativity?", options: ["Na","Cl","K","Br"], correct: 1},
+  {id: 94, q: "Resonance frequency f = 1/2π√LC. If L doubles, f becomes", options: ["2f","f/2","f/√2","√2 f"], correct: 2},
+  {id: 95, q: "Which is not a colligative property?", options: ["Vapor pressure lowering","Boiling point elevation","Surface tension","Osmotic pressure"], correct: 2},
+  {id: 96, q: "In Hardy-Weinberg, if p=0.7, q=", options: ["0.3","0.09","0.49","0.21"], correct: 0},
+  {id: 97, q: "Which cell organelle has DNA?", options: ["Ribosome","Lysosome","Mitochondria","Golgi"], correct: 2},
+  {id: 98, q: "Angle of deviation is min when", options: ["i1=i2","r1=r2","i1=r2","i2=r1"], correct: 0},
+  {id: 99, q: "Which is an example of discontinuous variation?", options: ["Height","Weight","Blood group","Skin color"], correct: 2},
+  {id: 100, q: "For an ideal gas, PV = nRT. If T doubles at constant V, P", options: ["Halves","Doubles","Remains same","Quadruples"], correct: 1}
+
+];
+
+let testQuestions = [];
+let userAnswers = [];
+let selectedNumQuestions = 0;
+let selectedTimeMinutes = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let showOnlyWrong = false;
+
+function selectQuestions(num){
+  selectedNumQuestions = num;
+  checkReady();
+}
+
+function selectTime(mins, event){
+  selectedTimeMinutes = mins;
+  document.querySelectorAll('.btn-time').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  checkReady();
+}
+
+function checkReady(){
+  if(selectedNumQuestions > 0 && selectedTimeMinutes > 0){
+    document.getElementById("startBtn").disabled = false;
+  }
+}
+
+function startTest(){
+  testQuestions = shuffleArray(questionBank).slice(0, selectedNumQuestions);
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("timer").style.display = "block";
+  startTimer(selectedTimeMinutes * 60);
+  displayQuestions(testQuestions);
+}
+
+function shuffleArray(arr){
+  let array = [...arr];
+  for(let i = array.length-1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// 3. UPDATED: THIS NOW SHOWS THE PASSAGE
+function displayQuestions(questions){
+  let html = "<h3>Your Test</h3>";
+  questions.forEach((q, index) => {
+
+    // CHECK IF THIS QUESTION HAS A PASSAGE
+    let passageHTML = "";
+    if(q.passageId && passages[q.passageId]){
+      const p = passages[q.passageId];
+      passageHTML = `
+<details class="passage-box">
+<summary>${p.title} - Click to Read</summary>
+<div class="passage-content">${p.text}</div>
+</details>
+      `;
+    }
+
+    html += `<div class="q">
+      ${passageHTML}
+<p><b>${index+1}. ${q.q}</b></p>
+      ${q.options.map((opt, i) => `
+<label>
+<input type="radio" name="q${index}" value="${i}"> ${opt}
+</label>
+      `).join('')}
+</div>`;
+  });
+  html += `<button class="btn-primary" onclick="submitTest()">Submit</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function startTimer(seconds){
+  timeLeft = seconds;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      alert("Time's up! Submitting your test automatically.");
+      submitTest();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  let mins = Math.floor(timeLeft / 60);
+  let secs = timeLeft % 60;
+  document.getElementById("timer").textContent =
+    `Time Left: ${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+
+function submitTest(){
+  clearInterval(timerInterval);
+  userAnswers = [];
+  let correctCount = 0;
+  let wrongCount = 0;
+
+  testQuestions.forEach((q, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    const userAnsIndex = selected? parseInt(selected.value) : -1;
+    const isCorrect = userAnsIndex === q.correct;
+
+    if(isCorrect) correctCount++;
+    else wrongCount++;
+
+    userAnswers.push({
+      question: q.q,
+      userAnswer: userAnsIndex === -1? "Not Answered" : q.options[userAnsIndex],
+      correctAnswer: q.options[q.correct],
+      isCorrect: isCorrect,
+      originalIndex: index + 1
+    });
+  });
+
+  const total = testQuestions.length;
+  const percentCorrect = ((correctCount / total) * 100).toFixed(1);
+  const percentWrong = ((wrongCount / total) * 100).toFixed(1);
+  displayResults(correctCount, wrongCount, total, percentCorrect, percentWrong);
+}
+
+function displayResults(correct, wrong, total, percentCorrect, percentWrong){
+  document.getElementById("timer").style.display = "none";
+  let html = `
+<h2>Test Submitted!</h2>
+<div class="stats-box">
+<h3>Score Statistics</h3>
+<p><b>Total Questions:</b> ${total}</p>
+<p style="color:green;"><b>Correct:</b> ${correct} (${percentCorrect}%)</p>
+<p style="color:red;"><b>Wrong/Not Answered:</b> ${wrong} (${percentWrong}%)</p>
+<p><b>Score:</b> ${correct}/${total}</p>
+</div>
+<h3>Question Review</h3>`;
+
+  userAnswers.forEach((item) => {
+    const statusColor = item.isCorrect? "green" : "red";
+    const statusText = item.isCorrect? "✓ Correct" : "✗ Wrong";
+    html += `
+<div class="q" style="border-left: 5px solid ${statusColor};">
+<p><b>${item.originalIndex}. ${item.question}</b>
+<span style="color:${statusColor}; float:right;">${statusText}</span>
+</p>
+<p><b>Your Answer:</b> ${item.userAnswer}</p>
+        ${!item.isCorrect? `<p style="color:green;"><b>Correct Answer:</b> ${item.correctAnswer}</p>` : ''}
+</div>`;
+  });
+
+  html += `<button class="btn-primary" onclick="location.reload()">Take Another Test</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+</script>
+</body>
+</html>
+
+
