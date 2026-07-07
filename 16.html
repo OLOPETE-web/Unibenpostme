@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>CBT Pro</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #f0f2f5; 
+    padding: 20px; 
+    max-width: 900px; 
+    margin: auto; 
+    color: #333;
+  }
+
+  h2, h3, h4 { color: #007bff; margin-bottom: 10px; }
+
+  #setup { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    text-align: center;
+  }
+
+ .q { 
+    margin-bottom: 20px; 
+    padding: 20px; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 10px; 
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: 0.2s;
+  }
+ .q:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+ .q p { margin: 0 0 15px 0; font-size: 17px; font-weight: 600; line-height: 1.5; }
+
+  label { 
+    display: block; 
+    margin: 10px 0; 
+    cursor: pointer; 
+    padding: 12px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    transition: 0.2s;
+  }
+  label:hover { background: #e7f3ff; border-color: #00bcff; }
+  input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+  button { 
+    padding: 14px 28px; 
+    margin: 10px 8px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 16px; 
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  button:hover { transform: translateY(-2px); }
+
+.btn-primary { background: #00bcff; color: white; }
+.btn-primary.hover { background: #0099cc; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #b02a37; }
+
+.btn-time { background: #e9ecef; color: #333; border: 2px solid transparent; }
+.btn-time.active { background: #007bff; color: white; border-color: #007bff; }
+
+.timer { 
+    position: sticky; 
+    top: 10px; 
+    background: linear-gradient(90deg, #ff9800, #ff5722); 
+    color: white; 
+    padding: 15px; 
+    text-align: center; 
+    font-size: 20px; 
+    font-weight: bold; 
+    border-radius: 10px; 
+    margin-bottom: 20px; 
+    display: none; 
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(255,152,0,0.3);
+  }
+
+.stats-box { 
+    background:white; 
+    padding:25px; 
+    border-radius:12px; 
+    margin-bottom:20px; 
+    border:1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+.stats-box h3 { font-size: 28px; color: #00bcff; }
+
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .q { padding: 15px; }
+    button { width: 100%; margin: 8px 0; }
+    .timer { font-size: 18px; padding: 12px; }
+}
+  /* NEW: PASSAGE BOX */
+.passage-box {
+    background: #f8f9ff;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+.passage-box summary {
+    padding: 12px 15px;
+    font-weight: 700;
+    color: #667eea;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1rem;
+  }
+.passage-box summary:after { content: ' ▼'; float: right; }
+.passage-box[open] summary:after { content: ' ▲'; }
+.passage-content {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    max-height: 250px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 0.95rem;
+ }
+</style>
+</head>
+<body>
+
+<div id="setup">
+<h2>Select Test Type</h2>
+<h4>1. Choose number of questions:</h4>
+<button class="btn-primary" onclick="selectQuestions(20)">20 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(30)">30 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(40)">40 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(500)">50 Questions</button>
+
+<h4>2. Choose time:</h4>
+<div id="timeOptions">
+<button class="btn-time" onclick="selectTime(20, event)">20 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">30 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">40 mins</button>
+<button class="btn-time" onclick="selectTime(60, event)">1 hr</button>
+</div>
+<br>
+<button class="btn-primary" onclick="startTest()" id="startBtn" disabled>Start Test</button>
+</div>
+
+<div class="timer" id="timer"></div>
+<div id="quiz"></div>
+
+<script>
+// 1. PUT YOUR PASSAGES HERE
+const passages = {
+ 1: {
+    title: "PASSAGE I:",
+    text: `The approach to the University is being restructured to case the flow of traffic, give better security and provided
+an appropriate introduction to a seat learning of higher learning. The works and services complex is also under
+construction, and we intend to move into the completed (major) part of it within the next few weeks. All these project
+are being executed with an eye to aesthetes, for we recognize the important influence of a beautiful and health
+environment on its inhabitants and feel that a cluster buildings on small space such as we have should be so well
+designed as to have a beneficial, psychological and sociological effect all members of the community.
+<br>I have gone to these lengths to itemize these examples of current development for two main reasons.
+<br>Firstly, to advice you that the road diversions and other physical inconveniences currently being experienced
+will be on the increase, because of intense development activity. We therefore appeal to you to bear with us in full
+knowledge and consolation that such inconveniences are temporary and will seen yield find tangible results.
+<br>Secondly, to demonstrate our capacity for executing approved projects with disputes, and to assure
+government that we are up to the task. Indeed, I can assure Government that its ability to disburse fund to us will be`
+  },
+ 2: {
+    title: "PASSAGE II:",
+    text: `How can people be sure they are truly marrying people with who are truly compatible once way by taking time
+to get to know the other person. Researchers have found that couples seem to go through three stages in this process?
+First, each person tries to measure his or her good and bad qualities against these of the others person. People tend to
+be drawn to others own seem to have about the same assets and abilities they themselves possess. Second, people look
+for compatible beliefs, attitude and interests to support the initial attraction. It is not until the third stage that people
+reveal to each other how they handle responsibilities. React to disappointment and cope with a wide variety of situation.
+They key to compatibility is for the couple to be sure that they have arrived at this last stage before they think seriously
+about marriage, such people are les likely to be unpleasantly surprised than those who marry quickly.`
+  }
+};
+
+// 2. ADD passageId TO QUESTIONS THAT USE A PASSAGE
+const questionBank = [
+{id: 1, passageId: 1, q: "‘An eye to aesthetics’ in this passage means", options: ["Regard for space","Beneficial psychological effect","Regard for health","Consideration for beauty"], correct: 3},
+  {id: 2, passageId: 1, q: "In the passage, the author tries to explain why", options: ["It is necessary to establish the works and services complex","Beauty should not be considered when building on small space","The gateway to the University is being rebuilt","A major part of the project should be completed in weeks"], correct: 2},
+  {id: 3, passageId: 1, q: "From the passage, we can gather that", options: ["There is no consideration for health of inhabitants","The inconvenience suffered will be for a while","There is deliberate effort to inconvenience people","Projects are carried out without approval"], correct: 1},
+  {id: 4, passageId: 1, q: "‘Unless it can be matched by our executive ability’ implies that", options: ["Development activity will not be intense","It will not be easy to convince government of our ability","It will be difficult to ask Government for funds","Road diversion will continue"], correct: 1},
+  {id: 5, passageId: 1, q: "Which is NOT a reason for the enumeration of current development?", options: ["To show we can execute approved projects","To convince government we can be trusted","The inconvenience will go on indefinitely","We are aware of inconveniences but don't want complaints"], correct: 2},
+  {id: 6, passageId: 2, q: "The best title for Passage II is", options: ["Research on marriage compatibility","Liabilities and assets in marriage","Compatibility in marriage","Responsibility in marriage"], correct: 2},
+  {id: 7, passageId: 2, q: "‘To be unpleasantly surprised’ means to be", options: ["Physically prepared for eventuality","Psychologically prepared","Seriously shocked by outcome of union","Taken unaware when marriage is done"], correct: 2},
+  {id: 8, passageId: 2, q: "From the passage, compatibility is measured in terms of", options: ["Good and bad qualities","Adequate knowledge of each other","Individual responsibility","Reactions to a variety of situations"], correct: 1},
+  {id: 9, passageId: 2, q: "According to the author, couples get to the crucial stage when", options: ["They show assets and liabilities","They display responsibility and positive attitude","They look for compatible beliefs","They show how they react to circumstances"], correct: 3},
+  {id: 10, passageId: 2, q: "The primary audience for Passage II is", options: ["Young married adults","People seeking compatibility","Those who fall in love at first sight","General public and marriage counselors"], correct: 1},
+  {id: 11, q: "‘When the chips are down’ means", options: ["When we get to crisis point","In the final analysis","When the blocks are lowered","When we get to the end of the road"], correct: 0},
+  {id: 12, q: "‘Pet aversion’ means", options: ["Something she likes very much","Something she dislikes very much","A hobby she loves","One thing she can’t miss"], correct: 1},
+  {id: 13, q: "‘Perfunctorily’ means", options: ["Without commitment","With speed","Grudgingly","Enthusiastically"], correct: 0},
+  {id: 14, q: "‘A political minefield’ means", options: ["Source of political benefit","Way out of political trouble","Cause for political joy","Invitation to political problems"], correct: 3},
+  {id: 15, q: "‘Astounding’ means", options: ["Special","Amazing","Serious","Outstanding"], correct: 1},
+  {id: 16, q: "‘Alienation’ means", options: ["Confinement","Isolation","Seriousness","Imprisonment"], correct: 1},
+  {id: 17, q: "‘The play didn’t come off’ means", options: ["Succeed","Fail","Attract applause","Take place"], correct: 1},
+  {id: 18, q: "‘Working at cross purposes’ means", options: ["In harmony","In disunity","For selfish purposes","For selfless purposes"], correct: 1},
+  {id: 19, q: "‘Die-hard criminal’ means", options: ["Hard to kill","Frank","Audible","Talkative"], correct: 0},
+  {id: 20, q: "‘Outspoken’ means", options: ["Fluent","Frank","Audible","Talkative"], correct: 1},
+  {id: 21, q: "‘Turmoil’ means", options: ["Devastation","Crisis","Trial","Tragedy"], correct: 1},
+  {id: 22, q: "‘Repudiated’ means", options: ["Disowned","Arrested","Warned","Killed"], correct: 0},
+  {id: 23, q: "‘Mimic’ means", options: ["Imitate","Ridicule","Tease","Worship"], correct: 0},
+  {id: 24, q: "‘Niggardly’ means", options: ["Contemptible","Beggarly","Sordid","Stingy"], correct: 3},
+  {id: 25, q: "Which word has a different stress pattern? A. Calendar B. Blackboard C. Suffer D. Success", options: ["Calendar","Blackboard","Suffer","Success"], correct: 3},
+  {id: 26, q: "Which word has a different stress pattern? A. Madam B. Convenient C. Contribute D. Embarrass", options: ["Madam","Convenient","Contribute","Embarrass"], correct: 0},
+  {id: 27, q: "Opposite of ‘kindle’", options: ["Kill","Switch","Extinguish","Destroy"], correct: 2},
+  {id: 28, q: "Opposite of ‘sudden’", options: ["Permanent","Extended","Delayed","Gradual"], correct: 3},
+  {id: 29, q: "Opposite of ‘derogatory’", options: ["Closing","Complimentary","Polite","Appetizing"], correct: 1},
+  {id: 30, q: "Opposite of ‘condoning’", options: ["Disliking","Disparaging","Harming","Condemning"], correct: 3},
+  {id: 31, q: "Opposite of ‘raw troops’", options: ["Seasoned","Weathered","Processed","Baked"], correct: 0},
+  {id: 32, q: "Opposite of ‘loquacious’", options: ["Polite","Intelligent","Considerate","Taciturn"], correct: 3},
+  {id: 33, q: "Opposite of ‘turmoil’", options: ["Loneliness","Relief","Tranquility","Stability"], correct: 2},
+  {id: 34, q: "Opposite of ‘fortified’", options: ["Poisoned","Weakened","Starved","Worried"], correct: 1},
+  {id: 35, q: "Opposite of ‘valedictory’", options: ["Inaugural","Academic","Original","Scholarly"], correct: 0},
+  {id: 36, q: "Opposite of ‘vacillated’", options: ["Courageous","Decisive","Reflective","Active"], correct: 1},
+  {id: 37, q: "Opposite of ‘insane’", options: ["Normal","Intelligent","Sober","Sensitive"], correct: 0},
+  {id: 38, q: "Opposite of ‘coarse’", options: ["Refined","Organized","Pure","Clean"], correct: 0},
+  {id: 39, q: "Opposite of ‘explicit’", options: ["Vague","Flamboyant","Wordy","Difficult"], correct: 0},
+  {id: 40, q: "Opposite of ‘chaos’", options: ["Quiet","Law","Restraint","Order"], correct: 3},
+
+  // 60 NEW VERY DIFFICULT SCIENCE QUESTIONS
+  // PHYSICS 20
+  {id: 41, q: "A particle moves in SHM with amplitude 0.1m and period 2s. Max velocity is", options: ["0.314 m/s","0.628 m/s","0.942 m/s","1.256 m/s"], correct: 0},
+  {id: 42, q: "A 50g mass stretches a spring 5cm. Work done to stretch it 10cm is", options: ["0.025J","0.05J","0.1J","0.2J"], correct: 1},
+  {id: 43, q: "Two resistors 3Ω and 6Ω in parallel across 12V. Power dissipated is", options: ["24W","36W","48W","72W"], correct: 3},
+  {id: 44, q: "Wavelength of electron with KE 100eV is [h=6.63e-34, m=9.1e-31]", options: ["0.123nm","0.387nm","1.22nm","12.3nm"], correct: 1},
+  {id: 45, q: "A Carnot engine operates between 400K and 300K. Efficiency is", options: ["25%","30%","40%","75%"], correct: 0},
+  {id: 46, q: "Intensity level of 10^-8 W/m^2. [I0=10^-12]", options: ["20dB","40dB","60dB","80dB"], correct: 1},
+  {id: 47, q: "Magnetic flux through 100-turn coil changes from 0.1 to 0.5 Wb in 0.2s. Induced EMF", options: ["20V","40V","200V","400V"], correct: 2},
+  {id: 48, q: "Critical angle for glass-air n=1.5 is", options: ["41.8°","48.6°","56.4°","62.5°"], correct: 0},
+  {id: 49, q: "Escape velocity from Earth [R=6.4e6m, g=10]", options: ["8km/s","11.2km/s","15.8km/s","22.4km/s"], correct: 1},
+  {id: 50, q: "A body of mass 2kg rotates in circle r=0.5m at 10rad/s. Centripetal force", options: ["50N","100N","200N","400N"], correct: 1},
+  {id: 51, q: "Binding energy per nucleon is max for", options: ["H-1","Fe-56","U-238","He-4"], correct: 1},
+  {id: 52, q: "De Broglie wavelength of 1eV neutron [m=1.67e-27]", options: ["0.286nm","0.906nm","2.86nm","9.06nm"], correct: 0},
+  {id: 53, q: "Resonance frequency of L=0.1H, C=10μF circuit", options: ["50Hz","159Hz","500Hz","1592Hz"], correct: 1},
+  {id: 54, q: "Work function 2eV. Threshold wavelength for photoelectric effect", options: ["310nm","410nm","620nm","1240nm"], correct: 2},
+  {id: 55, q: "Pressure at 10km depth in sea [ρ=1000, g=10]", options: ["1 x 10^5 Pa","1 x 10^6 Pa","1 x 10^7 Pa","1 x 10^8 Pa"], correct: 3},
+  {id: 56, q: "Young’s modulus if stress=2x10^8 Pa and strain=0.001", options: ["2 x 10^9 Pa","2 x 10^10 Pa","2 x 10^11 Pa","2 x 10^12 Pa"], correct: 2},
+  {id: 57, q: "Half-life 5730y. % of C-14 left after 11460y", options: ["50%","25%","12.5%","6.25%"], correct: 1},
+  {id: 58, q: "Electric field at 0.1m from +2μC charge", options: ["1.8 x 10^5 N/C","1.8 x 10^6 N/C","1.8 x 10^7 N/C","1.8 x 10^8 N/C"], correct: 1},
+  {id: 59, q: "Doppler shift: source 500Hz moving to observer at 30m/s. [v=330]", options: ["450Hz","550Hz","600Hz","650Hz"], correct: 1},
+  {id: 60, q: "Entropy change for 1kg ice to water at 0°C [Lf=3.34e5]", options: ["1226 J/K","334 J/K","273 J/K","0 J/K"], correct: 0},
+
+  // CHEMISTRY 20
+  {id: 61, q: "pH of 0.01M NaOH", options: ["10","11","12","13"], correct: 2},
+  {id: 62, q: "Molarity of 5.6g KOH in 250cm^3 [K=39, O=16, H=1]", options: ["0.2M","0.4M","0.8M","1.0M"], correct: 1},
+  {id: 63, q: "Order of reaction if rate doubles when [A] doubles", options: ["0","1","2","3"], correct: 1},
+  {id: 64, q: "ΔH for 2H2 + O2 → 2H2O if ΔHf H2O = -286kJ/mol", options: ["-286kJ","-572kJ","+286kJ","+572kJ"], correct: 1},
+  {id: 65, q: "Which has highest boiling point?", options: ["CH4","C2H6","C3H8","C4H10"], correct: 3},
+  {id: 66, q: "Hybridization in BF3", options: ["sp","sp2","sp3","sp3d"], correct: 1},
+  {id: 67, q: "Oxidation number of Cr in Cr2O7^2-", options: ["+3","+6","+7","+12"], correct: 1},
+  {id: 68, q: "Kp for N2 + 3H2 ⇌ 2NH3 if Kc=0.5 at 500K", options: ["0.5(0.082x500)^-2","0.5(0.082x500)^2","0.5/RT","0.5xRT"], correct: 0},
+  {id: 69, q: "Which is not a colligative property?", options: ["Osmotic pressure","Boiling point elevation","Surface tension","Freezing point depression"], correct: 2},
+  {id: 70, q: "Buffer pH using Henderson equation pKa=4.75, [A-]=0.1, [HA]=0.01", options: ["3.75","4.75","5.75","6.75"], correct: 2},
+  {id: 71, q: "Ecell for Zn|Zn2+||Cu2+|Cu. E°Zn=-0.76, E°Cu=+0.34", options: ["1.10V","-1.10V","0.42V","-0.42V"], correct: 0},
+  {id: 72, q: "Isomers of C4H10", options: ["1","2","3","4"], correct: 1},
+  {id: 73, q: "Which absorbs UV most?", options: ["O2","O3","N2","CO2"], correct: 1},
+  {id: 74, q: "Solubility product of BaSO4 if solubility=1x10^-5M", options: ["1x10^-5","1x10^-10","2x10^-10","1x10^-20"], correct: 1},
+  {id: 75, q: "Rate constant units for 2nd order reaction", options: ["s^-1","mol^-1 dm^3 s^-1","mol dm^-3 s^-1","dm^3 mol^-1"], correct: 1},
+  {id: 76, q: "Which complex is tetrahedral?", options: ["[Ni(CN)4]2-"," [Co(NH3)6]3+"," [NiCl4]2-"," [Fe(CN)6]4-"], correct: 2},
+  {id: 77, q: "Enthalpy of atomization of NaCl is highest due to", options: ["High lattice energy","Low ionization energy","High hydration energy","Low electron affinity"], correct: 0},
+  {id: 78, q: "pOH of 0.001M HCl", options: ["3","11","12","13"], correct: 1},
+  {id: 79, q: "Which undergoes SN1 fastest?", options: ["CH3Cl","(CH3)2CHCl","(CH3)3CCl","CH3CH2Cl"], correct: 2},
+  {id: 80, q: "Activation energy lowered by", options: ["Increase T","Increase concentration","Catalyst","Increase pressure"], correct: 2},
+
+  // BIOLOGY 20
+  {id: 81, q: "Which is not part of central dogma?", options: ["DNA→RNA","RNA→Protein","Protein→DNA","RNA→DNA"], correct: 2},
+  {id: 82, q: "Number of ATP from 1 glucose in Krebs cycle only", options: ["2","4","6","8"], correct: 0},
+  {id: 83, q: "Which hormone causes ovulation?", options: ["FSH","LH","Estrogen","Progesterone"], correct: 1},
+  {id: 84, q: "Structure for osmoregulation in Paramecium", options: ["Contractile vacuole","Food vacuole","Pseudopodia","Cilia"], correct: 0},
+  {id: 85, q: "Blood group with no antigens", options: ["A","B","AB","O"], correct: 3},
+  {id: 86, q: "Site of protein synthesis", options: ["Nucleus","Ribosome","Mitochondria","Golgi"], correct: 1},
+  {id: 87, q: "Which is not a greenhouse gas?", options: ["CO2","CH4","N2O","N2"], correct: 3},
+  {id: 88, q: "Meiosis occurs in", options: ["Liver cells","Root tip","Anther","Epidermis"], correct: 2},
+  {id: 89, q: "Vector for sleeping sickness", options: ["Anopheles","Tsetse fly","Aedes","Culex"], correct: 1},
+  {id: 90, q: "Which has double circulation?", options: ["Fish","Frog","Bird","Lizard"], correct: 2},
+  {id: 91, q: "Enzyme that breaks protein in stomach", options: ["Pepsin","Trypsin","Lipase","Amylase"], correct: 0},
+  {id: 92, q: "Plant hormone for fruit ripening", options: ["Auxin","Gibberellin","Cytokinin","Ethylene"], correct: 3},
+  {id: 93, q: "Which is prokaryote?", options: ["Amoeba","Euglena","E.coli","Yeast"], correct: 2},
+  {id: 94, q: "Number of chromosomes in human sperm", options: ["23","46","92","69"], correct: 0},
+  {id: 95, q: "Which is not a lymphoid organ?", options: ["Spleen","Thymus","Liver","Tonsils"], correct: 2},
+  {id: 96, q: "Photosystem I absorbs light best at", options: ["680nm","700nm","450nm","550nm"], correct: 1},
+  {id: 97, q: "Genetic code is", options: ["Overlapping","Comma-less","Degenerate","All of the above"], correct: 3},
+  {id: 98, q: "Which disease is caused by protozoa?", options: ["Tuberculosis","Malaria","Cholera","Influenza"], correct: 1},
+  {id: 99, q: "Structure that prevents backflow in veins", options: ["Valve","Sphincter","Node","Septum"], correct: 0},
+  {id: 100, q: "Primary succession starts on", options: ["Abandoned farm","Burnt forest","Bare rock","Pond"], correct: 2}
+];
+
+let testQuestions = [];
+let userAnswers = [];
+let selectedNumQuestions = 0;
+let selectedTimeMinutes = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let showOnlyWrong = false;
+
+function selectQuestions(num){
+  selectedNumQuestions = num;
+  checkReady();
+}
+
+function selectTime(mins, event){
+  selectedTimeMinutes = mins;
+  document.querySelectorAll('.btn-time').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  checkReady();
+}
+
+function checkReady(){
+  if(selectedNumQuestions > 0 && selectedTimeMinutes > 0){
+    document.getElementById("startBtn").disabled = false;
+  }
+}
+
+function startTest(){
+  testQuestions = shuffleArray(questionBank).slice(0, selectedNumQuestions);
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("timer").style.display = "block";
+  startTimer(selectedTimeMinutes * 60);
+  displayQuestions(testQuestions);
+}
+
+function shuffleArray(arr){
+  let array = [...arr];
+  for(let i = array.length-1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// 3. UPDATED: THIS NOW SHOWS THE PASSAGE
+function displayQuestions(questions){
+  let html = "<h3>Your Test</h3>";
+  questions.forEach((q, index) => {
+
+    // CHECK IF THIS QUESTION HAS A PASSAGE
+    let passageHTML = "";
+    if(q.passageId && passages[q.passageId]){
+      const p = passages[q.passageId];
+      passageHTML = `
+<details class="passage-box">
+<summary>${p.title} - Click to Read</summary>
+<div class="passage-content">${p.text}</div>
+</details>
+      `;
+    }
+
+    html += `<div class="q">
+      ${passageHTML}
+<p><b>${index+1}. ${q.q}</b></p>
+      ${q.options.map((opt, i) => `
+<label>
+<input type="radio" name="q${index}" value="${i}"> ${opt}
+</label>
+      `).join('')}
+</div>`;
+  });
+  html += `<button class="btn-primary" onclick="submitTest()">Submit</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function startTimer(seconds){
+  timeLeft = seconds;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      alert("Time's up! Submitting your test automatically.");
+      submitTest();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  let mins = Math.floor(timeLeft / 60);
+  let secs = timeLeft % 60;
+  document.getElementById("timer").textContent =
+    `Time Left: ${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+
+function submitTest(){
+  clearInterval(timerInterval);
+  userAnswers = [];
+  let correctCount = 0;
+  let wrongCount = 0;
+
+  testQuestions.forEach((q, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    const userAnsIndex = selected? parseInt(selected.value) : -1;
+    const isCorrect = userAnsIndex === q.correct;
+
+    if(isCorrect) correctCount++;
+    else wrongCount++;
+
+    userAnswers.push({
+      question: q.q,
+      userAnswer: userAnsIndex === -1? "Not Answered" : q.options[userAnsIndex],
+      correctAnswer: q.options[q.correct],
+      isCorrect: isCorrect,
+      originalIndex: index + 1
+    });
+  });
+
+  const total = testQuestions.length;
+  const percentCorrect = ((correctCount / total) * 100).toFixed(1);
+  const percentWrong = ((wrongCount / total) * 100).toFixed(1);
+  displayResults(correctCount, wrongCount, total, percentCorrect, percentWrong);
+}
+
+function displayResults(correct, wrong, total, percentCorrect, percentWrong){
+  document.getElementById("timer").style.display = "none";
+  let html = `
+<h2>Test Submitted!</h2>
+<div class="stats-box">
+<h3>Score Statistics</h3>
+<p><b>Total Questions:</b> ${total}</p>
+<p style="color:green;"><b>Correct:</b> ${correct} (${percentCorrect}%)</p>
+<p style="color:red;"><b>Wrong/Not Answered:</b> ${wrong} (${percentWrong}%)</p>
+<p><b>Score:</b> ${correct}/${total}</p>
+</div>
+<h3>Question Review</h3>`;
+
+  userAnswers.forEach((item) => {
+    const statusColor = item.isCorrect? "green" : "red";
+    const statusText = item.isCorrect? "✓ Correct" : "✗ Wrong";
+    html += `
+<div class="q" style="border-left: 5px solid ${statusColor};">
+<p><b>${item.originalIndex}. ${item.question}</b>
+<span style="color:${statusColor}; float:right;">${statusText}</span>
+</p>
+<p><b>Your Answer:</b> ${item.userAnswer}</p>
+        ${!item.isCorrect? `<p style="color:green;"><b>Correct Answer:</b> ${item.correctAnswer}</p>` : ''}
+</div>`;
+  });
+
+  html += `<button class="btn-primary" onclick="location.reload()">Take Another Test</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+</script>
+</body>
+</html>
+
+
