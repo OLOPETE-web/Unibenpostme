@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>CBT Pro</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #f0f2f5; 
+    padding: 20px; 
+    max-width: 900px; 
+    margin: auto; 
+    color: #333;
+  }
+
+  h2, h3, h4 { color: #007bff; margin-bottom: 10px; }
+
+  #setup { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+    text-align: center;
+  }
+
+ .q { 
+    margin-bottom: 20px; 
+    padding: 20px; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 10px; 
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: 0.2s;
+  }
+ .q:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+ .q p { margin: 0 0 15px 0; font-size: 17px; font-weight: 600; line-height: 1.5; }
+
+  label { 
+    display: block; 
+    margin: 10px 0; 
+    cursor: pointer; 
+    padding: 12px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    transition: 0.2s;
+  }
+  label:hover { background: #e7f3ff; border-color: #00bcff; }
+  input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+  button { 
+    padding: 14px 28px; 
+    margin: 10px 8px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 16px; 
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  button:hover { transform: translateY(-2px); }
+
+.btn-primary { background: #00bcff; color: white; }
+.btn-primary:hover { background: #0099cc; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #b02a37; }
+
+.btn-time { background: #e9ecef; color: #333; border: 2px solid transparent; }
+.btn-time.active { background: #007bff; color: white; border-color: #007bff; }
+
+.timer { 
+    position: sticky; 
+    top: 10px; 
+    background: linear-gradient(90deg, #ff9800, #ff5722); 
+    color: white; 
+    padding: 15px; 
+    text-align: center; 
+    font-size: 20px; 
+    font-weight: bold; 
+    border-radius: 10px; 
+    margin-bottom: 20px; 
+    display: none; 
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(255,152,0,0.3);
+  }
+
+.stats-box { 
+    background:white; 
+    padding:25px; 
+    border-radius:12px; 
+    margin-bottom:20px; 
+    border:1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+.stats-box h3 { font-size: 28px; color: #00bcff; }
+
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .q { padding: 15px; }
+    button { width: 100%; margin: 8px 0; }
+    .timer { font-size: 18px; padding: 12px; }
+}
+  /* NEW: PASSAGE BOX */
+.passage-box {
+    background: #f8f9ff;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+.passage-box summary {
+    padding: 12px 15px;
+    font-weight: 700;
+    color: #667eea;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1rem;
+  }
+.passage-box summary:after { content: ' ▼'; float: right; }
+.passage-box[open] summary:after { content: ' ▲'; }
+.passage-content {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    max-height: 250px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 0.95rem;
+ }
+</style>
+</head>
+<body>
+
+<div id="setup">
+<h2>Select Test Type</h2>
+<h4>1. Choose number of questions:</h4>
+<button class="btn-primary" onclick="selectQuestions(20)">20 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(30)">30 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(40)">40 Questions</button>
+<button class="btn-primary" onclick="selectQuestions(50)">50 Questions</button>
+
+<h4>2. Choose time:</h4>
+<div id="timeOptions">
+<button class="btn-time" onclick="selectTime(20, event)">20 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">30 mins</button>
+<button class="btn-time" onclick="selectTime(30, event)">40 mins</button>
+<button class="btn-time" onclick="selectTime(60, event)">1 hr</button>
+</div>
+<br>
+<button class="btn-primary" onclick="startTest()" id="startBtn" disabled>Start Test</button>
+</div>
+
+<div class="timer" id="timer"></div>
+<div id="quiz"></div>
+
+<script>
+// 1. PUT YOUR PASSAGES HERE
+const passages = {
+ 1: {
+    title: "PASSAGE I:",
+    text: `Cloning creates serious issues of individually. The cloned person may experience concerns about his or her
+distinctive identity, not only because the person will be genotype (genetic make up) and appearance identical to another
+human being, but in this case, because he or she may also be twin to the person who is the “father” or mother if one
+can still call them that. What would be the psychin burdens of being the “child” or “parent” of your twin? The cloned
+individual, moreover, will be saddled with genotype that has already lived. He or she will not be fully a surprise to the
+world.
+<br>People will likely always compare a clone’s performance in life that of the original True, a cloned person’s
+nurture and circumstances in life will be different, genotype is not exactly destiny. Still, one must also expect parental
+and other efforts to shape this new life after the original or at least to view the child with original vision always
+firmly in mind. Why else then would they clone from the star basketball player.
+<br>Since, the birth of dolly, there has been a fair amount of doublespeak in this matter of genetic identity. Experts
+have rushed in to reassure the public that the clone would in no way be the same person or have any confusion about
+his or her identity, they are pleased to point out that the clone of firm star Julia Roberts would not be Julia Roberts,
+Fair enough. But one is shortchanging the truth by emphasizing the additional importance of the environment rearing
+and social setting; genotype obviously matter plenty. That after all, is the only reason to clone, whether human beings
+or sheep. The odds that the clones of basketball star Larry Bird will play basketball are, I submit, infinitely greater than
+they are for clones of Jockey Willie shoemaker.`
+  }
+};
+
+// 2. ADD passageId TO QUESTIONS THAT USE A PASSAGE
+const questionBank = [
+{id: 1, q: "Let us now get down to brass tacks", options: ["Dodge the facts","Tell a lie","Change iron to brass","Face the actual facts"], correct: 3},
+  {id: 2, q: "He talked my head off when I visited him", options: ["Wearied me with talking","Pushed me off his seat","Had nothing to say","Gave himself a headache"], correct: 0},
+  {id: 3, q: "Do your parents always decry insubordination?", options: ["Speak against","Tolerate","Embrace","Overlook"], correct: 0},
+  {id: 4, q: "Can you mention any two inimical acts?", options: ["Economical","Dangerous","Encouraging","Fantastic"], correct: 1},
+  {id: 5, q: "The magazine was ___ by the government for an offensive publication", options: ["Suspended","Proscribed","Condemned","Sealed"], correct: 1},
+  {id: 6, q: "Your mobile phone has ___ many times in the last thirty minutes", options: ["Rang","Rung","Been ringing","Being rung"], correct: 2},
+
+  // PASSAGE: CLONING = 7-11
+  {id: 7, passageId: 1, q: "In line 1 of paragraph 3, 'fair' most nearly means", options: ["Pleasing","Considerable","Promising","Ethical"], correct: 1},
+  {id: 8, passageId: 1, q: "The author agrees that", options: ["Genetic characteristics alone cannot determine behavior","Cloned people may have greater professional opportunities","Cloning humans is greater tech than cloning sheep","A formal code of ethics will be needed"], correct: 0},
+  {id: 9, passageId: 1, q: "The question 'Why else then would they clone from a star basketball player?' serves to", options: ["Suggest some issues are not resolved","Show importance of parents","Imply cloning displaces familiar parenting","Suggest value perceived in person cloned"], correct: 3},
+  {id: 10, passageId: 1, q: "The author mentions two sports stars in order to", options: ["Distinguish fame from celebrity","Highlight need for athlete data","Suggest athletic skill has genetic component","Argue against analysis of abilities"], correct: 2},
+  {id: 11, passageId: 1, q: "The author uses 'True' to indicate", options: ["Acknowledgement of tensions","Distrust of researchers","Recognition of potential counterargument","Conviction about facts"], correct: 2},
+
+  // INTERPRETATION + OPPOSITES = 12-15
+  {id: 12, q: "For all he cared, the match was as good as lost. This means", options: ["He didn't care, the match was lost","He was almost certain the match would be lost","He was afraid the match would be lost","He cared very much about losing"], correct: 1},
+  {id: 13, q: "It is possible that he has not read that book yet. This means", options: ["He has certainly not read it","He has probably read it","He may not have read it yet","He has still not read it"], correct: 2},
+  {id: 14, q: "Opposite of 'colossal' amount", options: ["Fantastic","Meager","Few","Huge"], correct: 1},
+  {id: 15, q: "Opposite of 'soothe' in 'statements that could ___ them'", options: ["Incense","Placate","Stimulate","Sensitize"], correct: 0},
+
+  // SECTION B: GENERAL PAPER = 16-65 = 50 QUESTIONS
+  // BIOLOGY 15
+  {id: 16, q: "One factor considered for safe blood transfusion is", options: ["Social class of donor","Rhesus factor of recipient","Age of recipient","Nationality of donor"], correct: 1},
+  {id: 17, q: "Which mammalian feature acts as shock absorber for embryo?", options: ["Umbilical cord","Amniotic fluid","Placenta","Amnion"], correct: 1},
+  {id: 18, q: "Maintenance of constant internal environment is called", options: ["Environmental regulation","Balance in nature","Peristalsis","Homeostasis"], correct: 3},
+  {id: 19, q: "Theory of use and disuse of organs was by", options: ["Charles Darwin","Jean Lamarck","Louis Pasteur","Robert Hooke"], correct: 1},
+  {id: 20, q: "Hydra can do all except", options: ["Feeding","Photosynthesis","Moving","Ejection"], correct: 1},
+  {id: 21, q: "Spherical bacteria in chains are called", options: ["Staphylococci","Streptococci","Cocci","Bacilli"], correct: 1},
+  {id: 22, q: "Crop disease caused by fungus", options: ["Groundnut rosette","Black pod disease of cocoa","Yam mosaic","Cassava bright"], correct: 1},
+  {id: 23, q: "Blood group that can receive from any group", options: ["AB","O","A","B"], correct: 0},
+  {id: 24, q: "Product of complete hydrolysis of starch", options: ["Fructose","Glucose","Lactose","Maltose"], correct: 1},
+  {id: 25, q: "Auxins are produced in", options: ["Petiole of leaves","Epidermis of roots","Parenchyma","Apical region of roots and shoots"], correct: 3},
+  {id: 26, q: "Function of liver not listed: production of", options: ["Urine","Bile","Osmoregulation","Removal of urea"], correct: 0},
+  {id: 27, q: "Large single cell in body", options: ["Neutron","Ovum","Liver cell","Muscle cell"], correct: 1},
+  {id: 28, q: "Blue-green algae belong to", options: ["Cyanophyta","Schizophyta","Chlorophyta","Chrysophyta"], correct: 0},
+  {id: 29, q: "Enzyme that breaks cane sugar", options: ["Lipase","Ptyalin","Invertase","Peptidase"], correct: 2},
+  {id: 30, q: "Largest bone in body", options: ["Scapula","Humerus","Femur","Skull"], correct: 2},
+
+  // CHEMISTRY 15
+  {id: 31, q: "Radiation deflected by both electric and magnetic field", options: ["Infrared rays","X-rays","Gamma rays","Beta rays"], correct: 3},
+  {id: 32, q: "Which does not decolorize bromine water?", options: ["C2H2","C2H4","C2H6","C3H6"], correct: 2},
+  {id: 33, q: "Aluminum should not be exposed to alkalis because it is", options: ["Basic","Acidic","Amphoteric","Reducing agent"], correct: 2},
+  {id: 34, q: "Renewable source of energy", options: ["Petroleum","Coal","Nuclear","Ocean waves"], correct: 3},
+  {id: 35, q: "Solubility 45g/100g water. How much from 50g solution?", options: ["2.15g","20g","12g","25g"], correct: 0},
+  {id: 36, q: "pH 2. Concentration of HCl in mol/dm3", options: ["0.01","0.1","1.0","2.0"], correct: 0},
+  {id: 37, q: "Bleaching action of chlorine in water is due to", options: ["Reducing property","Oxidizing power","It is acidic","It is weak acid"], correct: 1},
+  {id: 38, q: "Which is not a contact force?", options: ["Gravity","Viscosity","Tension","Reaction"], correct: 0},
+  {id: 39, q: "Pairs of fundamental quantities only", options: ["Luminous intensity, time","Current, weight","Mass, velocity","Length, speed"], correct: 0},
+  {id: 40, q: "Cube 20cm floats with 15cm submerged. Density of cube", options: ["1.85 g/cm3","0.085 g/cm3","0.75 g/cm3","0.65 g/cm3"], correct: 2},
+  {id: 41, q: "Path of projectile motion is", options: ["Convex","Concave","Parabolic","Straight line"], correct: 2},
+  {id: 42, q: "Motion of tuning fork prongs", options: ["Oscillatory","Translational","Random","Rotational"], correct: 0},
+  {id: 43, q: "Type of motion least exhibited by toy top", options: ["Random","Rotational","Oscillatory","Translational"], correct: 0},
+  {id: 44, q: "Sulfur does not", options: ["Form two acidic oxides","Spontaneously ignite","Burn with blue flame","Conduct in molten state"], correct: 1},
+  {id: 45, q: "Concept of antibiotics started with", options: ["Gregor Mendel","Mary Slessor","Louis Pasteur","Alexander Fleming"], correct: 3},
+
+  // PHYSICS + MATH 10
+  {id: 46, q: "Sound with pure tone", options: ["Vibrating string","Tuning fork","Siren","Violin"], correct: 1},
+  {id: 47, q: "Gas 231cm3 at 18°C. New volume at... data incomplete", options: ["22.43cm3","0.0224cm3","231cm3","Cannot be determined"], correct: 3},
+  {id: 48, q: "Botanical name for yellow yam", options: ["Dioscorea gayanesis","Dioscorea rotunda","Dioscorea alata","Dioscorea dumentorum"], correct: 2},
+  {id: 49, q: "Tissue made of dead cells", options: ["Xylem vessels","Cambium","Mesophyll","Palisade"], correct: 0},
+  {id: 50, q: "Function not of liver", options: ["Storage of iron","Formation of bile","Breakdown amino acids","Excretion of urea"], correct: 3},
+
+  // 50 NEW VERY DIFFICULT QUESTIONS = 51-100
+  // PHYSICS 15
+  {id: 51, q: "A 2kg mass on spring k=50N/m. Period of oscillation", options: ["0.4π s","0.8π s","1.26 s","2.0 s"], correct: 2},
+  {id: 52, q: "Work done in moving 5C charge through 10V PD", options: ["2J","5J","10J","50J"], correct: 3},
+  {id: 53, q: "Resistivity of material depends on", options: ["Length","Area","Temperature","All of the above"], correct: 2},
+  {id: 54, q: "Critical angle for water-air n=1.33", options: ["41.8°","48.8°","53.1°","60°"], correct: 1},
+  {id: 55, q: "Doppler effect: observer moving towards source. Frequency", options: ["Decreases","Increases","Remains same","Becomes zero"], correct: 1},
+  {id: 56, q: "Binding energy of nucleus is due to", options: ["Gravitational force","Electromagnetic force","Strong nuclear force","Weak force"], correct: 2},
+  {id: 57, q: "In transformer, eddy current loss is reduced by", options: ["Thick wire","Laminated core","High voltage","DC supply"], correct: 1},
+  {id: 58, q: "Escape velocity is independent of", options: ["Mass of planet","Radius of planet","Mass of object","Gravitational constant"], correct: 2},
+  {id: 59, q: "For SHM, acceleration is max at", options: ["Mean position","Extreme position","Equilibrium","Center"], correct: 1},
+  {id: 60, q: "Photoelectric effect proves", options: ["Wave nature","Particle nature","Both","Neither"], correct: 1},
+  {id: 61, q: "Magnetic field inside solenoid is", options: ["Zero","Uniform","Non-uniform","Circular"], correct: 1},
+  {id: 62, q: "Refractive index has no", options: ["Unit","Dimension","Both","Neither"], correct: 0},
+  {id: 63, q: "Efficiency of Carnot engine depends on", options: ["Working substance","Temperatures","Pressure","Volume"], correct: 1},
+  {id: 64, q: "De Broglie wavelength of 100eV electron", options: ["0.123nm","1.23nm","12.3nm","0.0123nm"], correct: 0},
+  {id: 65, q: "In AC circuit, power factor = 1 for", options: ["R circuit","L circuit","C circuit","LC circuit"], correct: 0},
+
+  // CHEMISTRY 15
+  {id: 66, q: "pH of 0.001M NaOH", options: ["11","12","13","14"], correct: 0},
+  {id: 67, q: "Order of reaction from rate = k[A]^2[B]", options: ["2","3","1","0"], correct: 1},
+  {id: 68, q: "Hybridization in SF6", options: ["sp3","sp3d","sp3d2","dsp2"], correct: 2},
+  {id: 69, q: "Which is strongest acid?", options: ["HClO","HClO2","HClO3","HClO4"], correct: 3},
+  {id: 70, q: "ΔH for reaction is +ve. Reaction is", options: ["Exothermic","Endothermic","Spontaneous","Reversible"], correct: 1},
+  {id: 71, q: "Coordination number in BCC", options: ["4","6","8","12"], correct: 2},
+  {id: 72, q: "Buffer action is max when pH = pKa and", options: ["[Salt]=[Acid]","pH=7","Temp high","Pressure high"], correct: 0},
+  {id: 73, q: "Oxidation state of Fe in [Fe(CN)6]4-", options: ["+2","+3","+4","0"], correct: 0},
+  {id: 74, q: "Which undergoes E2 elimination fastest?", options: ["1° halide","2° halide","3° halide","Methyl halide"], correct: 2},
+  {id: 75, q: "Kp and Kc related by Kp = Kc(RT)^Δn. For 2SO2 + O2 ⇌ 2SO3, Δn", options: ["-1","0","+1","-2"], correct: 0},
+  {id: 76, q: "Colligative property", options: ["Color","Surface tension","Boiling point elevation","Viscosity"], correct: 2},
+  {id: 77, q: "Which complex is paramagnetic?", options: ["[Ni(CO)4]"," [Zn(NH3)4]2+"," [Cu(NH3)4]2+"," [Co(NH3)6]3+"], correct: 2},
+  {id: 78, q: "Isomerism in [Co(NH3)4Cl2]+", options: ["Optical","Geometrical","Linkage","Ionization"], correct: 1},
+  {id: 79, q: "Rate constant units for zero order", options: ["s^-1","mol dm^-3 s^-1","dm3 mol^-1 s^-1","No unit"], correct: 1},
+  {id: 80, q: "Electronegativity order: F, Cl, Br, I", options: ["F>Cl>Br>I","I>Br>Cl>F","Cl>F>Br>I","F>Br>Cl>I"], correct: 0},
+
+  // BIOLOGY 20
+  {id: 81, q: "Which is not part of operon model?", options: ["Operator","Promoter","Repressor","Ribosome"], correct: 3},
+  {id: 82, q: "Number of ATP from glycolysis net", options: ["2","4","6","8"], correct: 0},
+  {id: 83, q: "Hormone for milk ejection", options: ["Prolactin","Oxytocin","Estrogen","Progesterone"], correct: 1},
+  {id: 84, q: "Contractile vacuole function", options: ["Digestion","Osmoregulation","Reproduction","Locomotion"], correct: 1},
+  {id: 85, q: "Universal donor blood group", options: ["A","B","AB","O"], correct: 3},
+  {id: 86, q: "Protein synthesis site", options: ["Nucleus","Ribosome","Lysosome","Vacuole"], correct: 1},
+  {id: 87, q: "Not a greenhouse gas", options: ["CO2","CH4","O3","N2"], correct: 3},
+  {id: 88, q: "Crossing over occurs in", options: ["Mitosis","Meiosis I","Meiosis II","Binary fission"], correct: 1},
+  {id: 89, q: "Vector for malaria", options: ["Aedes","Anopheles","Culex","Tsetse"], correct: 1},
+  {id: 90, q: "4-chambered heart in", options: ["Fish","Amphibian","Reptile","Bird"], correct: 3},
+  {id: 91, q: "Enzyme in saliva", options: ["Pepsin","Trypsin","Ptyalin","Lipase"], correct: 2},
+  {id: 92, q: "Plant hormone for cell division", options: ["Auxin","Gibberellin","Cytokinin","ABA"], correct: 2},
+  {id: 93, q: "Prokaryote example", options: ["Amoeba","Paramecium","E.coli","Yeast"], correct: 2},
+  {id: 94, q: "Haploid number in human", options: ["23","46","69","92"], correct: 0},
+  {id: 95, q: "Lymphoid organ", options: ["Kidney","Spleen","Liver","Pancreas"], correct: 1},
+  {id: 96, q: "C4 plant example", options: ["Wheat","Rice","Maize","Bean"], correct: 2},
+  {id: 97, q: "Genetic code property", options: ["Non-overlapping","Unambiguous","Degenerate","All"], correct: 3},
+  {id: 98, q: "Disease caused by virus", options: ["Typhoid","Malaria","Polio","Cholera"], correct: 2},
+  {id: 99, q: "Prevents backflow in heart", options: ["Valve","Septum","Node","Chordae"], correct: 0},
+  {id: 100, q: "Primary succession on", options: ["Farm land","Forest","Bare rock","Lake"], correct: 2}
+];
+
+let testQuestions = [];
+let userAnswers = [];
+let selectedNumQuestions = 0;
+let selectedTimeMinutes = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let showOnlyWrong = false;
+
+function selectQuestions(num){
+  selectedNumQuestions = num;
+  checkReady();
+}
+
+function selectTime(mins, event){
+  selectedTimeMinutes = mins;
+  document.querySelectorAll('.btn-time').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  checkReady();
+}
+
+function checkReady(){
+  if(selectedNumQuestions > 0 && selectedTimeMinutes > 0){
+    document.getElementById("startBtn").disabled = false;
+  }
+}
+
+function startTest(){
+  testQuestions = shuffleArray(questionBank).slice(0, selectedNumQuestions);
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("timer").style.display = "block";
+  startTimer(selectedTimeMinutes * 60);
+  displayQuestions(testQuestions);
+}
+
+function shuffleArray(arr){
+  let array = [...arr];
+  for(let i = array.length-1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// 3. UPDATED: THIS NOW SHOWS THE PASSAGE
+function displayQuestions(questions){
+  let html = "<h3>Your Test</h3>";
+  questions.forEach((q, index) => {
+
+    // CHECK IF THIS QUESTION HAS A PASSAGE
+    let passageHTML = "";
+    if(q.passageId && passages[q.passageId]){
+      const p = passages[q.passageId];
+      passageHTML = `
+<details class="passage-box">
+<summary>${p.title} - Click to Read</summary>
+<div class="passage-content">${p.text}</div>
+</details>
+      `;
+    }
+
+    html += `<div class="q">
+      ${passageHTML}
+<p><b>${index+1}. ${q.q}</b></p>
+      ${q.options.map((opt, i) => `
+<label>
+<input type="radio" name="q${index}" value="${i}"> ${opt}
+</label>
+      `).join('')}
+</div>`;
+  });
+  html += `<button class="btn-primary" onclick="submitTest()">Submit</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+
+function startTimer(seconds){
+  timeLeft = seconds;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      alert("Time's up! Submitting your test automatically.");
+      submitTest();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  let mins = Math.floor(timeLeft / 60);
+  let secs = timeLeft % 60;
+  document.getElementById("timer").textContent =
+    `Time Left: ${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+
+function submitTest(){
+  clearInterval(timerInterval);
+  userAnswers = [];
+  let correctCount = 0;
+  let wrongCount = 0;
+
+  testQuestions.forEach((q, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    const userAnsIndex = selected? parseInt(selected.value) : -1;
+    const isCorrect = userAnsIndex === q.correct;
+
+    if(isCorrect) correctCount++;
+    else wrongCount++;
+
+    userAnswers.push({
+      question: q.q,
+      userAnswer: userAnsIndex === -1? "Not Answered" : q.options[userAnsIndex],
+      correctAnswer: q.options[q.correct],
+      isCorrect: isCorrect,
+      originalIndex: index + 1
+    });
+  });
+
+  const total = testQuestions.length;
+  const percentCorrect = ((correctCount / total) * 100).toFixed(1);
+  const percentWrong = ((wrongCount / total) * 100).toFixed(1);
+  displayResults(correctCount, wrongCount, total, percentCorrect, percentWrong);
+}
+
+function displayResults(correct, wrong, total, percentCorrect, percentWrong){
+  document.getElementById("timer").style.display = "none";
+  let html = `
+<h2>Test Submitted!</h2>
+<div class="stats-box">
+<h3>Score Statistics</h3>
+<p><b>Total Questions:</b> ${total}</p>
+<p style="color:green;"><b>Correct:</b> ${correct} (${percentCorrect}%)</p>
+<p style="color:red;"><b>Wrong/Not Answered:</b> ${wrong} (${percentWrong}%)</p>
+<p><b>Score:</b> ${correct}/${total}</p>
+</div>
+<h3>Question Review</h3>`;
+
+  userAnswers.forEach((item) => {
+    const statusColor = item.isCorrect? "green" : "red";
+    const statusText = item.isCorrect? "✓ Correct" : "✗ Wrong";
+    html += `
+<div class="q" style="border-left: 5px solid ${statusColor};">
+<p><b>${item.originalIndex}. ${item.question}</b>
+<span style="color:${statusColor}; float:right;">${statusText}</span>
+</p>
+<p><b>Your Answer:</b> ${item.userAnswer}</p>
+        ${!item.isCorrect? `<p style="color:green;"><b>Correct Answer:</b> ${item.correctAnswer}</p>` : ''}
+</div>`;
+  });
+
+  html += `<button class="btn-primary" onclick="location.reload()">Take Another Test</button>`;
+  document.getElementById("quiz").innerHTML = html;
+}
+</script>
+</body>
+</html>
+
+
