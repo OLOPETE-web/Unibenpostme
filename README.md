@@ -1,0 +1,1 @@
+Elite Club is a website that allows aspirants across Nigeria to practice post utme past questions selected from popular universities in Nigeria and also track their growth as they continue to take the exams all for free.
