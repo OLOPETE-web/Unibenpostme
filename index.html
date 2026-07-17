@@ -3,174 +3,340 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CBT Portal</title>
+<title>EliteClub - CBT Practice Platform</title>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', Arial, sans-serif;
-    }
+  :root{
+    --bg: #050A1A;
+    --bg-gradient: linear-gradient(160deg, #050A1A 0%, #0B1433 50%, #102A5C 100%);
+    --primary: #3DA9FF;
+    --primary-glow: rgba(61, 169, 255, 0.4);
+    --text: #E6F1FF;
+    --text-dim: rgba(230, 241, 255, 0.7);
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(61, 169, 255, 0.2);
+  }
 
-    body {
-        background: #f5f5f5;
-        padding: 16px;
-    }
+  *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 20px;
-    }
+  html{ scroll-behavior: smooth; }
 
-    .welcome {
-        color: #2B6EF6;
-        font-size: 22px;
-        font-weight: 700;
-        line-height: 1.2;
-    }
+  body{
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-    .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        align-items: flex-end;
-    }
+  /* Header */
+  header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 5%;
+    backdrop-filter: blur(12px);
+    background: rgba(5, 10, 26, 0.6);
+    border-bottom: 1px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    animation: slideDown 0.8s ease;
+  }
 
-    select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: #fff;
-        font-size: 14px;
-    }
+  .logo-area{
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
 
-    .logout-btn {
-        background: #2B6EF6;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-    }
+  .logo-img{
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    object-fit: contain;
+    box-shadow: 0 0 15px var(--primary-glow);
+  }
 
-    .search {
-        width: 100%;
-        padding: 12px 16px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 15px;
-    }
+  .brand-name{
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--primary), #A8D8FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-    .search:focus {
-        outline: none;
-        border-color: #2B6EF6;
-    }
+  .btn{
+    padding: 0.7rem 1.5rem;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    background: linear-gradient(90deg, var(--primary), #6EC1FF);
+    color: var(--bg);
+    box-shadow: 0 4px 20px var(--primary-glow);
+    position: relative;
+    overflow: hidden;
+  }
 
-    .course-card {
-        background: white;
-        padding: 16px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        border: 1px solid #eee;
-        cursor: pointer;
-        transition: 0.2s;
-    }
+  .btn:hover{
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 30px var(--primary-glow);
+  }
 
-    .course-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
+  /* Main */
+  main{
+    padding: 4rem 5%;
+    text-align: center;
+  }
 
-    .course-code {
-        font-weight: 700;
-        font-size: 16px;
-        color: #111;
-        margin-bottom: 4px;
-    }
+  .welcome{
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, #fff, var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards;
+  }
 
-    .course-action {
-        color: #666;
-        font-size: 14px;
-    }
+  .subtext{
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto 3rem auto;
+    line-height: 1.6;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.3s forwards;
+  }
+
+  /* Cards */
+  .cards-container{
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin: 3rem 0;
+    flex-wrap: wrap;
+  }
+
+  .card{
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    width: 320px;
+    backdrop-filter: blur(15px);
+    transition: all 0.4s ease;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  .card.show{
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.6s ease;
+  }
+
+  .card:hover{
+    transform: translateY(-10px) scale(1.03);
+    border-color: var(--primary);
+    box-shadow: 0 15px 50px rgba(61, 169, 255, 0.3);
+  }
+
+  .card-icon{
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1.5rem auto;
+    background: linear-gradient(135deg, rgba(61,169,255,0.2), rgba(110,193,255,0.1));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s ease;
+  }
+
+  .card:hover .card-icon{ transform: rotate(5deg) scale(1.1); }
+
+  .card-icon svg{
+    width: 70px;
+    height: 70px;
+    fill: var(--primary);
+  }
+
+  .card-title{
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--text);
+  }
+
+  .card-text{
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .btn-center{
+    margin: 2rem 0 4rem 0;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.6s forwards;
+  }
+
+  /* Footer */
+  footer{
+    padding: 2.5rem 5%;
+    text-align: center;
+    border-top: 1px solid var(--card-border);
+    background: rgba(5, 10, 26, 0.8);
+    backdrop-filter: blur(12px);
+  }
+
+  .footer-text{
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text-dim);
+  }
+
+  /* Animations */
+  @keyframes fadeUp{
+    from{ opacity: 0; transform: translateY(20px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideDown{
+    from{ opacity: 0; transform: translateY(-30px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* Floating glow */
+  .glow{
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(80px);
+    animation: float 8s ease-in-out infinite;
+  }
+  .glow1{ top: -100px; left: -100px; }
+  .glow2{ bottom: -100px; right: -100px; animation-delay: 2s; }
+
+  @keyframes float{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(-30px); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px){
+    header{ flex-direction: column; gap: 1rem; }
+    .cards-container{ flex-direction: column; align-items: center; }
+    .card{ width: 90%; }
+  }
 </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="welcome">
-            Welcome,<br>
-            <span id="username"></span><br>
-           
-        </div>
-        <div class="controls">
-            <select id="department">
-                <option>Science</option>
-                <option>Arts</option>
-                <option>Social science</option>
-            </select>
-            <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
-        </div>
-    </div>
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
 
-    <input type="text" class="search" placeholder="Search Year..." id="searchBox" autofocus>
+<header>
+<div class="logo-area">
+<img src="logo2.PNG" alt="EliteClub Logo" class="logo-img">
+<div class="brand-name">eliteclub</div>
+</div>
+<a href="main.html" class="btn">Start Test</a>
+</header>
 
-    <div id="courseList">
-        <div class="course-card" onclick="2017/2018">
-            <a href="17.html"><div class="course-code">2017/2018</div>
-            <div class="course-action">Click to study</div>
-        </a>
-        </div>
-        
-        <div class="course-card" onclick="2016/2017">
-            <a href="16.html"><div class="course-code">2016/2017</div>
-            <div class="course-action">Click to study</div>
-            </a>
-        </div>
-        
-        <div class="course-card" onclick="2012/2013">
-            <a href="12.html"><div class="course-code">2012/2013</div>
-            <div class="course-action">Click to study</div>
-            </a>
-        </div>
-        
-        <div class="course-card" onclick="2011/2012">
-            <a href="11.html"><div class="course-code">2011/2012</div>
-            <div class="course-action">Click to study</div>
-        </a>
+<main>
+<h1 class="welcome" id="welcome-text">Welcome To Elite Club</h1>
+<p class="subtext">
+    Join thousands of smart aspirants preparing for CBT exams. Practice with real questions, 
+    track your progress, and learn smarter with EliteClub.
+</p>
 
-        </div>
-    </div>
+<div class="cards-container">
+<div class="card">
+<div class="card-icon"> 
+<svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+</div>
+<h3 class="card-title">Real CBT Practice</h3>
+<p class="card-text">Test yourself with thousands of past questions and mock exams gotten from popular universities in that feel just like the real thing.</p>
+</div>
+
+<div class="card">
+<div class="card-icon">
+<svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+</div>
+<h3 class="card-title">Learn With Others</h3>
+<p class="card-text">Connect with smart aspirants, share tips, and stay motivated together in our learning community.</p>
+</div>
+
+<div class="card">
+<div class="card-icon">
+<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+</div>
+<h3 class="card-title">Track Progress</h3>
+<p class="card-text">Get instant results, performance analytics, and see exactly where you need to improve.</p>
+</div>
+</div>
+
+<a href="main.html" class="btn btn-center">Start Test</a>
+</main>
+
+<footer>
+<p class="footer-text">Follow WhatsApp channel to learn with other smart aspirants</p>
+<a href="https://whatsapp.com/channel/0029Vb7lUkT7dmeWfZQCZF0y" class="btn">Follow</a>
+</footer>
+
 <script>
-    // 1. Set username on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const username = localStorage.getItem("username");
-        document.getElementById("username").textContent = username || "Scholar";
+  // Scroll reveal animation for cards
+  const cards = document.querySelectorAll('.card');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, index) => {
+      if(entry.isIntersecting){
+        setTimeout(() => {
+          entry.target.classList.add('show');
+        }, index * 200); // stagger effect
+      }
     });
+  }, { threshold: 0.2 });
 
-    // 2. Search filter
-    document.getElementById('searchBox').addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const cards = document.querySelectorAll('.course-card');
-        
-        cards.forEach(card => {
-            const code = card.querySelector('.course-code').textContent.toLowerCase();
-            card.style.display = code.includes(searchTerm) ? 'block' : 'none';
-        });
+  cards.forEach(card => observer.observe(card));
+
+  // Typing effect for welcome text
+  const welcomeEl = document.getElementById('welcome-text');
+  const text = welcomeEl.innerText;
+  welcomeEl.innerText = '';
+  let i = 0;
+  function typeWriter(){
+    if(i < text.length){
+      welcomeEl.innerText += text.charAt(i);
+      i++;
+      setTimeout(typeWriter, 80);
+    }
+  }
+  window.onload = typeWriter;
+
+  // Parallax glow
+  window.addEventListener('mousemove', (e) => {
+    const glows = document.querySelectorAll('.glow');
+    const x = e.clientX / window.innerWidth;
+    const y = e.clientY / window.innerHeight;
+    glows.forEach((glow) => {
+      glow.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
     });
-
-    function openCourse(code, name) {
-        sessionStorage.setItem('currentCourse', JSON.stringify({code, name}));
-        window.location.href = `quiz1.html?course=${code}`
-    }
-    
-    function logout() {
-        localStorage.removeItem("username"); // clear it on logout
-        window.location.href = 'index.html';
-    }
+  });
 </script>
 
 </body>
