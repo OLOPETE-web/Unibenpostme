@@ -55,6 +55,39 @@ Elite Club is a website that lets you practice post UTME past questions selected
  .calc-screen{background:#000;color:var(--accent);font-size:1.5rem;text-align:right;padding:10px;border-radius:8px;margin-bottom:10px}
  .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
  .calc-btn{padding:12px}.calc-btn.operator{background:var(--accent2)}.calc-btn.equal{background:var(--good)}.calc-btn.clear{background:var(--bad)}
+   .glow{
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(80px);
+    animation: float 8s ease-in-out infinite;
+  }
+  .btn{
+    padding: 0.7rem 1.5rem;
+    border-radius: 50px;
+    border: 1rem;
+    border-color: #22c55e;
+    border-width: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    background: linear-gradient(90deg, var(--primary), #6EC1FF);
+    color: #22c55e;
+    box-shadow: 0 4px 20px var(--primary-glow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:hover{
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 30px var(--primary-glow);
+  }
+
 </style>
 </head>
 <body>
@@ -86,6 +119,8 @@ Elite Club is a website that lets you practice post UTME past questions selected
     <button onclick="startTest()" style="font-size:1.1rem;padding:16px">Start New 50Q Test</button>
     <div class="stats"><div class="stat-card"><h3>JAMB</h3><p id="jambScore">0</p></div><div class="stat-card"><h3>Last Score</h3><p id="lastScore">0/50</p></div><div class="stat-card"><h3>Last Agg</h3><p id="aggregate">0.00</p></div></div>
     <h2>Aggregate Progress</h2><canvas id="progressChart"></canvas>
+    <h3> Follow our WhatsApp channel to join other Aspirants to learn </h3>
+    <h3><a href="https://whatsapp.com/channel/0029Vb7lUkT7dmeWfZQCZF0y" class="btn">|Follow Channel|</a></h3>
     <h2>Test History - Click to View</h2>
     <h2> 
     <a href="https://whatsapp.com/channel/0029Vb7lUkT7dmeWfZQCZF0y" class="btn"> Follow our WhatsApp channel to learn with other aspirants</a> </h2>
